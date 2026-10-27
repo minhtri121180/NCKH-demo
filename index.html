@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sổ Tay WebGIS Y Tế & Du Lịch Đà Nẵng v4.2</title>
+    <title>Sổ Tay WebGIS Y Tế & Du Lịch Đà Nẵng v4.3</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -74,6 +74,12 @@
             background-color: #ffffff;
             color: #00695c;
             border: 1px solid #ffffff;
+        }
+
+        .btn-register {
+            background-color: #ffb300;
+            color: #fff;
+            border: 1px solid #ffb300;
         }
 
         .user-info {
@@ -187,7 +193,7 @@
             width: 100%;
         }
 
-        /* Modal Đăng nhập */
+        /* Modal Chung */
         .modal {
             display: none;
             position: fixed;
@@ -251,11 +257,12 @@
 <body>
 
     <header>
-        <h1>🏥 WebGIS Sổ Tay Số Đà Nẵng (v4.2)</h1>
+        <h1>🏥 WebGIS Sổ Tay Số Đà Nẵng (v4.3)</h1>
         <div class="header-actions">
             <button class="btn-action btn-gps" onclick="locateUser()">📍 Vị trí của tôi</button>
             <a href="tel:115" class="btn-action btn-sos">🚨 CẤP CỨU 115</a>
-            <span class="user-info" id="user-info">👤 Admin</span>
+            <span class="user-info" id="user-info">👤 Thành viên</span>
+            <button class="btn-action btn-register" id="btn-reg-ui" onclick="openRegisterModal()">📝 Tạo tài khoản</button>
             <button class="btn-action btn-auth" id="btn-auth" onclick="handleAuth()">🔑 Đăng nhập</button>
         </div>
     </header>
@@ -278,12 +285,25 @@
     <!-- Modal Đăng nhập -->
     <div class="modal" id="login-modal">
         <div class="modal-content">
-            <h3>Đăng nhập Quản trị viên</h3>
-            <input type="text" id="username" placeholder="Tên đăng nhập">
-            <input type="password" id="password" placeholder="Mật khẩu">
+            <h3>Đăng nhập hệ thống</h3>
+            <input type="text" id="username" placeholder="Tên đăng nhập (admin)">
+            <input type="password" id="password" placeholder="Mật khẩu (123456)">
             <div class="modal-actions">
                 <button class="btn-modal btn-cancel" onclick="closeLoginModal()">Hủy</button>
                 <button class="btn-modal btn-submit" onclick="submitLogin()">Đăng nhập</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tạo tài khoản (Đăng ký) -->
+    <div class="modal" id="register-modal">
+        <div class="modal-content">
+            <h3>Đăng ký tài khoản mới</h3>
+            <input type="text" id="reg-username" placeholder="Chọn tên đăng nhập">
+            <input type="password" id="reg-password" placeholder="Mật khẩu của bạn">
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeRegisterModal()">Hủy</button>
+                <button class="btn-modal btn-submit" onclick="submitRegister()">Đăng ký</button>
             </div>
         </div>
     </div>
@@ -292,6 +312,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         let isLoggedIn = false;
+        let currentUserName = "";
 
         const locations = [
             {
@@ -420,11 +441,13 @@
             }
         }
 
+        /* Quản lý Đăng nhập & Đăng ký */
         function handleAuth() {
             if (isLoggedIn) {
                 isLoggedIn = false;
                 document.getElementById('user-info').style.display = 'none';
                 document.getElementById('btn-auth').innerText = '🔑 Đăng nhập';
+                document.getElementById('btn-reg-ui').style.display = 'inline-flex';
                 alert("Đã đăng xuất thành công!");
             } else {
                 document.getElementById('login-modal').style.display = 'flex';
@@ -438,21 +461,47 @@
         function submitLogin() {
             const user = document.getElementById('username').value;
             const pass = document.getElementById('password').value;
+            const savedUser = localStorage.getItem('reg_user');
+            const savedPass = localStorage.getItem('reg_pass');
 
-            if (user === "admin" && pass === "123456") {
+            if ((user === "admin" && pass === "123456") || (user === savedUser && pass === savedPass)) {
                 isLoggedIn = true;
+                currentUserName = user;
+                document.getElementById('user-info').innerText = `👤 ${user}`;
                 document.getElementById('user-info').style.display = 'inline-block';
                 document.getElementById('btn-auth').innerText = '🚪 Đăng xuất';
+                document.getElementById('btn-reg-ui').style.display = 'none';
                 closeLoginModal();
-                alert("Đăng nhập quyền Quản trị viên thành công!");
+                alert(`Đăng nhập thành công với tài khoản: ${user}!`);
             } else {
-                alert("Tài khoản hoặc mật khẩu không đúng! (Gợi ý: admin / 123456)");
+                alert("Tài khoản hoặc mật khẩu không đúng!");
+            }
+        }
+
+        function openRegisterModal() {
+            document.getElementById('register-modal').style.display = 'flex';
+        }
+
+        function closeRegisterModal() {
+            document.getElementById('register-modal').style.display = 'none';
+        }
+
+        function submitRegister() {
+            const rUser = document.getElementById('reg-username').value;
+            const rPass = document.getElementById('reg-password').value;
+
+            if (rUser && rPass) {
+                localStorage.setItem('reg_user', rUser);
+                localStorage.setItem('reg_pass', rPass);
+                alert("Đăng ký tài khoản thành công! Bạn có thể dùng tài khoản này để đăng nhập ngay.");
+                closeRegisterModal();
+            } else {
+                alert("Vui lòng điền đầy đủ tên đăng nhập và mật khẩu!");
             }
         }
 
         displayLocations(locations);
         
-        // Buộc bản đồ tự điều chỉnh lại kích thước hiển thị đầy đủ
         setTimeout(() => {
             map.invalidateSize();
         }, 200);
