@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Du Lịch An Toàn Đà Nẵng Số (v7.1)</title>
+    <title>Du Lịch An Toàn Đà Nẵng Số (v7.2)</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet Routing Machine CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
     <style>
         * {
             box-sizing: border-box;
@@ -37,7 +39,7 @@
             align-items: center;
         }
 
-        /* 2. MÀN HÌNH KHAI BÁO Y TẾ (LỚP 2 - HIỆN SAU KHI ĐĂNG NHẬP) */
+        /* 2. MÀN HÌNH KHAI BÁO Y TẾ (LỚP 2) */
         #health-onboarding {
             position: fixed;
             top: 0;
@@ -170,7 +172,7 @@
             gap: 20px;
         }
 
-        /* MÀN HÌNH TRANG CHỦ (HOME DASHBOARD) */
+        /* TRANG CHỦ */
         #home-screen {
             display: flex;
             flex-direction: column;
@@ -226,7 +228,7 @@
         .module-card h4 { font-size: 20px; font-weight: bold; }
         .module-card p { font-size: 16px; color: #555; line-height: 1.4; }
 
-        /* CÁC MÀN HÌNH MODULE PHỤ */
+        /* CÁC MODULE PHỤ */
         .sub-screen {
             display: none;
             flex: 1;
@@ -274,7 +276,17 @@
         
         #map { flex: 1; height: 100%; }
 
-        /* NỘI DUNG CÁC MODULE KHÁC */
+        /* Tùy chỉnh ẩn bớt bảng chỉ đường chi tiết mặc định của thư viện routing nếu muốn gọn bản đồ */
+        .leaflet-routing-container {
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            max-height: 250px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+
         .content-body { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; font-size: 18px; }
         .content-body h3 { color: #00695c; font-size: 22px; border-bottom: 2px solid #00695c; padding-bottom: 8px; }
         
@@ -306,7 +318,7 @@
 </head>
 <body>
 
-    <!-- LỚP 1: MÀN HÌNH ĐĂNG NHẬP -->
+    <!-- MÀN HÌNH ĐĂNG NHẬP -->
     <div id="auth-guard">
         <div class="auth-card" id="login-box">
             <h2>🏥 DU LỊCH AN TOÀN ĐÀ NẴNG SỐ</h2>
@@ -339,7 +351,7 @@
         </div>
     </div>
 
-    <!-- LỚP 2: MÀN HÌNH KHAI BÁO Y TẾ CÁ NHÂN -->
+    <!-- MÀN HÌNH KHAI BÁO Y TẾ -->
     <div id="health-onboarding">
         <div class="auth-card" style="width: 550px;">
             <h2>📋 SỔ TAY SỨC KHỎE CÁ NHÂN</h2>
@@ -382,10 +394,10 @@
         </div>
     </header>
 
-    <!-- CONTAINER ỨNG DỤNG CHÍNH -->
+    <!-- CONTAINER CHÍNH -->
     <div class="app-container">
 
-        <!-- TRANG CHỦ (4 MODULE) -->
+        <!-- TRANG CHỦ -->
         <div id="home-screen">
             <div class="welcome-banner">
                 <div>
@@ -414,10 +426,10 @@
             </div>
         </div>
 
-        <!-- MODULE 1: BẢN ĐỒ (35 ĐIỂM) -->
+        <!-- MODULE 1: BẢN ĐỒ & ĐỊNH TUYẾN ĐƯỜNG ĐI -->
         <div id="module-map" class="sub-screen">
             <div class="sub-header">
-                <span>Bản Đồ 35 Địa Điểm Y Tế & Nghỉ Dưỡng Đà Nẵng</span>
+                <span>Bản Đồ Chỉ Dẫn Đường Đi Thực Tế Đà Nẵng</span>
                 <button class="btn-back" onclick="goHome()">⬅ Về Trang Chủ</button>
             </div>
             <div class="map-layout">
@@ -461,9 +473,7 @@
             </div>
             <div class="content-body">
                 <h3>Thông Tin Y Tế Đã Khai Báo</h3>
-                <div id="health-display-card" style="background:#e8f5e9; padding:20px; border-radius:8px; border-left:6px solid #2e7d32;">
-                    <!-- Dữ liệu tự động điền từ form khai báo -->
-                </div>
+                <div id="health-display-card" style="background:#e8f5e9; padding:20px; border-radius:8px; border-left:6px solid #2e7d32;"></div>
                 <button class="auth-btn btn-main" style="width: 250px;" onclick="openModule('module-map')">🗺️ ĐI TỚI BẢN ĐỒ NGAY</button>
             </div>
         </div>
@@ -488,14 +498,15 @@
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Routing Machine JS -->
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
     <script>
         let map = null;
-        let userLat = 16.0544;
+        let userLat = 16.0544; // Tâm trung tâm Đà Nẵng
         let userLng = 108.2022;
-        let routingLine = null;
+        let routingControl = null; // Biến điều khiển tuyến đường thực tế
         let markers = [];
 
-        // ĐẦY ĐỦ 35 ĐỊA ĐIỂM TRÍCH XUẤT TỪ FILE DỮ LIỆU NCKH.XLSX
         const locations = [
             { name: "TIA WELLNESS RESORT", category: "Nghỉ dưỡng", lat: 16.031443, lng: 108.254268, phone: "0236 396 7999", note: "Chuyên biệt về du lịch nghỉ dưỡng tĩnh dưỡng, thiền, yoga và trị liệu sức khỏe." },
             { name: "Naman Retreat", category: "Nghỉ dưỡng", lat: 15.969839, lng: 108.284334, phone: "0236 395 9888", note: "Kiến trúc tre xanh mát, tĩnh lặng, thực đơn ăn uống thanh đạm, có xe điện đưa đón nội khu." },
@@ -512,8 +523,8 @@
             { name: "Mercure Danang French Village Bana Hills", category: "Nghỉ dưỡng", lat: 15.997583, lng: 107.988615, phone: "0236 379 9888", note: "Nằm trên đỉnh Bà Nà với không khí mát mẻ quanh năm, kiến trúc làng Pháp cổ kính tĩnh lặng về đêm." },
             { name: "Làng Toom Sara", category: "Nghỉ dưỡng", lat: 15.957546, lng: 107.995369, phone: "0919 225 544", note: "Thiết kế mộc mạc, gần gũi thiên nhiên, không khí núi rừng thoáng đãng." },
             { name: "LAM Apartment & Hotel", category: "Nghỉ dưỡng", lat: 16.023997, lng: 108.210887, phone: "0236 366 3567", note: "Căn hộ trang bị đầy đủ bếp nấu ăn, máy giặt, không gian ấm cúng như ở nhà." },
-            { name: "Bệnh viện Đà Nẵng", category: "Y tế", lat: 16.07381969, lng: 108.2137274, phone: "0965 231 818", note: "Bệnh viện đa khoa hạng I tuyến cuối, thế mạnh hàng đầu về Phẫu thuật Tim mạch, Thần kinh và Hồi sức cấp cứu." },
-            { name: "Bệnh viện Đa Khoa Nam Liên Chiểu", category: "Y tế", lat: 16.05602315, lng: 108.1622937, phone: "096 515 181", note: "Khám và điều trị Đa khoa cơ bản, Y học cổ truyền, Phục hồi chức năng cho khu vực Liên Chiểu." },
+            { name: "Bệnh viện Đà Nẵng", category: "Y tế", lat: 16.07381969, lng: 108.2137274, phone: "0965 231 818", note: "Bệnh viện đa khoa hạng I tuyến cuối, thế mạnh hàng đầu về Phẫu thuật Tim mạch, Thần kinh." },
+            { name: "Bệnh viện Đa Khoa Nam Liên Chiểu", category: "Y tế", lat: 16.05602315, lng: 108.1622937, phone: "096 515 181", note: "Khám và điều trị Đa khoa cơ bản, Y học cổ truyền, Phục hồi chức năng." },
             { name: "Bệnh viện Ung Bướu Đà Nẵng", category: "Y tế", lat: 16.0689068, lng: 108.1655636, phone: "1900 9095", note: "Chẩn đoán và điều trị ung thư đa mô thức, tầm soát ung thư sớm, chăm sóc giảm nhẹ." },
             { name: "Bệnh viện Phổi Đà Nẵng", category: "Y tế", lat: 16.04884271, lng: 108.1716412, phone: "0963 488 163", note: "Điều trị các bệnh lý đường hô hấp phức tạp, Lao và bệnh phổi mạn tính (COPD, hen suyễn)." },
             { name: "Bệnh viện Da liễu Đà Nẵng", category: "Y tế", lat: 16.07428741, lng: 108.1769791, phone: "0965171818", note: "Chuyên về Bệnh lý da liễu, Phẫu thuật da và chăm sóc thẩm mỹ an toàn." },
@@ -626,7 +637,7 @@
 
         function initMap() {
             if (map) { map.invalidateSize(); return; }
-            map = L.map('map').setView([16.0544, 108.2022], 12);
+            map = L.map('map').setView([16.0544, 108.2022], 13);
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
                 maxZoom: 18, attribution: 'Tiles &copy; Esri'
             }).addTo(map);
@@ -656,7 +667,7 @@
                         <b>Loại:</b> ${loc.category}<br>
                         <b>SĐT:</b> <a href="tel:${loc.phone}">${loc.phone}</a><br>
                         <b>Ghi chú:</b> ${loc.note}<br><br>
-                        <button onclick="drawRoute(${loc.lat}, ${loc.lng}, '${loc.name}')" style="background:#00695c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">📍 Chỉ đường tới đây</button>
+                        <button onclick="drawRealRoute(${loc.lat}, ${loc.lng}, '${loc.name}')" style="background:#00695c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">📍 Chỉ đường thực tế</button>
                     </div>
                 `);
                 markers.push(marker);
@@ -668,19 +679,38 @@
                     <p><b>Loại hình:</b> <span style="color:${loc.category==='Y tế'?'#c62828':'#2e7d32'}; font-weight:bold;">${loc.category}</span></p>
                     <p><b>SĐT:</b> ${loc.phone}</p>
                     <p><b>Tiện ích:</b> ${loc.note}</p>
-                    <button style="background:#00695c; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; margin-top:5px;" onclick="event.stopPropagation(); drawRoute(${loc.lat}, ${loc.lng}, '${loc.name}')">🗺️ Vẽ đường đi</button>
+                    <button style="background:#00695c; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; margin-top:5px;" onclick="event.stopPropagation(); drawRealRoute(${loc.lat}, ${loc.lng}, '${loc.name}')">🗺️ Chỉ đường thực tế</button>
                 `;
                 card.onclick = () => { map.flyTo([loc.lat, loc.lng], 16); marker.openPopup(); };
                 listContainer.appendChild(card);
             });
         }
 
-        function drawRoute(destLat, destLng, destName) {
-            if (routingLine) map.removeLayer(routingLine);
-            const latlngs = [[userLat, userLng], [destLat, destLng]];
-            routingLine = L.polyline(latlngs, { color: '#d32f2f', weight: 4, dashArray: '8, 8' }).addTo(map);
-            map.fitBounds(routingLine.getBounds(), { padding: [50, 50] });
-            alert(`Đã vẽ tuyến đường chỉ dẫn đến: ${destName}`);
+        // TÍNH NĂNG VẼ ĐƯỜNG ĐI THỰC TẾ BÁM THEO ĐƯỜNG XÁ (ROUTING MACHINE)
+        function drawRealRoute(destLat, destLng, destName) {
+            // Xóa tuyến đường cũ nếu đã vẽ trước đó
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            // Sử dụng OSRM để tự động tìm đường đi thực tế trên hệ thống giao thông Đà Nẵng
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(userLat, userLng), // Điểm xuất phát (Vị trí hiện tại / trung tâm)
+                    L.latLng(destLat, destLng)  // Điểm đích
+                ],
+                routeWhileDragging: false,
+                addWaypoints: false,
+                draggableWaypoints: false,
+                fitSelectedRoutes: true,
+                language: 'vi',
+                lineOptions: {
+                    styles: [{ color: '#d32f2f', opacity: 0.8, weight: 5 }]
+                },
+                createMarker: function() { return null; } // Ẩn bớt marker phụ của routing để giữ nguyên marker gốc
+            }).addTo(map);
+
+            alert(`Đang tính toán tuyến đường giao thông thực tế đến: ${destName}`);
         }
 
         function handleSearch() {
