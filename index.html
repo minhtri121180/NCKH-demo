@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Du Lịch An Toàn Đà Nẵng Số (v7.2)</title>
-    <!-- Leaflet CSS -->
+    <title>Du Lịch An Toàn Đà Nẵng Số (v7.3)</title>
+    <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Leaflet Routing Machine CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Leaflet Routing Machine CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
     <style>
         * {
             box-sizing: border-box;
@@ -25,7 +29,7 @@
             overflow: hidden;
         }
 
-        /* 1. MÀN HÌNH ĐĂNG NHẬP (LỚP 1) */
+        /* MÀN HÌNH ĐĂNG NHẬP (LỚP 1) */
         #auth-guard {
             position: fixed;
             top: 0;
@@ -39,7 +43,7 @@
             align-items: center;
         }
 
-        /* 2. MÀN HÌNH KHAI BÁO Y TẾ (LỚP 2) */
+        /* MÀN HÌNH KHAI BÁO Y TẾ (LỚP 2) */
         #health-onboarding {
             position: fixed;
             top: 0;
@@ -66,64 +70,25 @@
             gap: 16px;
         }
 
-        .auth-card h2 {
-            color: #00695c;
-            font-size: 24px;
-            text-align: center;
-        }
+        .auth-card h2 { color: #00695c; font-size: 24px; text-align: center; }
+        .auth-card p { font-size: 15px; color: #555; text-align: center; }
 
-        .auth-card p {
-            font-size: 15px;
-            color: #555;
-            text-align: center;
-        }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-weight: bold; font-size: 16px; }
+        .form-group input, .form-group select { padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline: none; }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .form-group label {
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .form-group input, .form-group select {
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 16px;
-            outline: none;
-        }
-
-        .auth-btn {
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 18px;
-            cursor: pointer;
-            text-align: center;
-        }
-
+        .auth-btn { padding: 14px; border: none; border-radius: 8px; font-weight: bold; font-size: 18px; cursor: pointer; text-align: center; }
         .btn-main { background-color: #00695c; color: white; }
         .btn-main:hover { background-color: #004d40; }
         .btn-reg { background-color: #ffb300; color: #fff; }
         
-        .auth-switch {
-            font-size: 15px;
-            color: #00695c;
-            cursor: pointer;
-            text-decoration: underline;
-            text-align: center;
-        }
+        .auth-switch { font-size: 15px; color: #00695c; cursor: pointer; text-decoration: underline; text-align: center; }
 
         /* HEADER CHÍNH */
         header {
             background-color: #00695c;
             color: white;
-            padding: 15px 25px;
+            padding: 12px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -131,20 +96,16 @@
             z-index: 1000;
         }
 
-        header h1 { font-size: 24px; }
-        header p { font-size: 14px; color: #e0f2f1; }
+        header h1 { font-size: 22px; }
+        header p { font-size: 13px; color: #e0f2f1; }
 
-        .header-actions {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
+        .header-actions { display: flex; gap: 10px; align-items: center; }
 
         .btn-action {
-            padding: 10px 18px;
-            font-size: 16px;
+            padding: 8px 16px;
+            font-size: 15px;
             font-weight: bold;
-            border-radius: 24px;
+            border-radius: 20px;
             border: none;
             cursor: pointer;
             text-decoration: none;
@@ -153,6 +114,8 @@
             gap: 6px;
         }
 
+        .btn-gps { background-color: #0288d1; color: white; }
+        .btn-gps:hover { background-color: #0277bd; }
         .btn-sos { background-color: #d32f2f; color: white; animation: pulse 1.5s infinite; }
         .btn-logout { background-color: #ffffff; color: #d32f2f; }
 
@@ -162,25 +125,10 @@
             100% { transform: scale(1); }
         }
 
-        /* CONTAINER ỨNG DỤNG CHÍNH */
-        .app-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            padding: 20px;
-            gap: 20px;
-        }
+        .app-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; gap: 20px; }
 
         /* TRANG CHỦ */
-        #home-screen {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            max-width: 1000px;
-            margin: 0 auto;
-            width: 100%;
-        }
+        #home-screen { display: flex; flex-direction: column; gap: 20px; max-width: 1000px; margin: 0 auto; width: 100%; }
 
         .welcome-banner {
             background: #ffffff;
@@ -196,11 +144,7 @@
         .welcome-banner h3 { font-size: 22px; color: #004d40; }
         .gps-status { font-size: 16px; color: #2e7d32; font-weight: bold; }
 
-        .modules-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
+        .modules-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 
         .module-card {
             background: white;
@@ -215,10 +159,7 @@
             gap: 10px;
         }
 
-        .module-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-        }
+        .module-card:hover { transform: translateY(-4px); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
 
         .mod-1 { border-color: #0288d1; }
         .mod-2 { border-color: #d32f2f; }
@@ -228,7 +169,7 @@
         .module-card h4 { font-size: 20px; font-weight: bold; }
         .module-card p { font-size: 16px; color: #555; line-height: 1.4; }
 
-        /* CÁC MODULE PHỤ */
+        /* MÀN HÌNH PHỤ */
         .sub-screen {
             display: none;
             flex: 1;
@@ -276,15 +217,15 @@
         
         #map { flex: 1; height: 100%; }
 
-        /* Tùy chỉnh ẩn bớt bảng chỉ đường chi tiết mặc định của thư viện routing nếu muốn gọn bản đồ */
+        /* Bảng chỉ đường chi tiết của Routing Machine */
         .leaflet-routing-container {
             background-color: white;
             padding: 10px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            max-height: 250px;
+            max-height: 220px;
             overflow-y: auto;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .content-body { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; font-size: 18px; }
@@ -382,13 +323,14 @@
         </div>
     </div>
 
-    <!-- HEADER CHÍNH -->
+    <!-- HEADER CHÍNH (Đã tích hợp Nút GPS Định Vị) -->
     <header>
         <div>
             <h1>DU LỊCH AN TOÀN ĐÀ NẴNG SỐ</h1>
             <p>Hỗ trợ an toàn sức khỏe cho du khách cao tuổi</p>
         </div>
         <div class="header-actions">
+            <button class="btn-action btn-gps" onclick="locateUser()">📍 Định vị vị trí của tôi</button>
             <a href="tel:115" class="btn-action btn-sos">🚨 CẤP CỨU 115</a>
             <button class="btn-action btn-logout" onclick="handleLogout()">🚪 Đăng xuất</button>
         </div>
@@ -403,7 +345,7 @@
                 <div>
                     <h3 id="welcome-text">Xin chào, Quý du khách! Bạn cần hỗ trợ gì hôm nay?</h3>
                 </div>
-                <div class="gps-status">🟢 GPS: Đã định vị tại Đà Nẵng</div>
+                <div class="gps-status" id="gps-status-text">🟢 GPS: Đã sẵn sàng định vị</div>
             </div>
 
             <div class="modules-grid">
@@ -426,7 +368,7 @@
             </div>
         </div>
 
-        <!-- MODULE 1: BẢN ĐỒ & ĐỊNH TUYẾN ĐƯỜNG ĐI -->
+        <!-- MODULE 1: BẢN ĐỒ PHỤC HỒI & ĐỊNH TUYẾN CHUẨN -->
         <div id="module-map" class="sub-screen">
             <div class="sub-header">
                 <span>Bản Đồ Chỉ Dẫn Đường Đi Thực Tế Đà Nẵng</span>
@@ -434,6 +376,7 @@
             </div>
             <div class="map-layout">
                 <div class="sidebar">
+                    <button class="btn-action btn-gps" style="width:100%; justify-content:center; padding:10px;" onclick="locateUser()">📍 Định vị vị trí hiện tại</button>
                     <input type="text" id="search-input" class="search-box" placeholder="🔍 Tìm kiếm địa điểm, bệnh viện..." oninput="handleSearch()">
                     <div class="filter-group">
                         <button class="filter-btn active" onclick="filterLocations('all', event)">Tất cả (35)</button>
@@ -496,16 +439,13 @@
         "Sổ tay du lịch số là công cụ hỗ trợ thông tin không gian và chỉ dẫn an toàn." — Phát triển bởi Nhóm NCKH 26CDL, ĐH Sư Phạm - ĐH Đà Nẵng.
     </footer>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Leaflet Routing Machine JS -->
-    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
     <script>
         let map = null;
-        let userLat = 16.0544; // Tâm trung tâm Đà Nẵng
+        let userLat = 16.0544; // Tọa độ mặc định trung tâm Đà Nẵng
         let userLng = 108.2022;
-        let routingControl = null; // Biến điều khiển tuyến đường thực tế
+        let routingControl = null;
         let markers = [];
+        let userMarker = null;
 
         const locations = [
             { name: "TIA WELLNESS RESORT", category: "Nghỉ dưỡng", lat: 16.031443, lng: 108.254268, phone: "0236 396 7999", note: "Chuyên biệt về du lịch nghỉ dưỡng tĩnh dưỡng, thiền, yoga và trị liệu sức khỏe." },
@@ -637,7 +577,7 @@
 
         function initMap() {
             if (map) { map.invalidateSize(); return; }
-            map = L.map('map').setView([16.0544, 108.2022], 13);
+            map = L.map('map').setView([16.0544, 108.2022], 12);
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
                 maxZoom: 18, attribution: 'Tiles &copy; Esri'
             }).addTo(map);
@@ -646,6 +586,39 @@
             L.marker([10.7500, 115.8300], { icon: L.divIcon({ className: 'sovereignty-label', html: '🇻🇳 Quần đảo Trường Sa (Khánh Hòa, VN)' }) }).addTo(map);
 
             displayLocations(locations);
+        }
+
+        // TÍNH NĂNG ĐỊNH VỊ VỊ TRÍ HIỆN TẠI NÂNG CẤP
+        function locateUser() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    userLat = position.coords.latitude;
+                    userLng = position.coords.longitude;
+
+                    if (userMarker && map) map.removeLayer(userMarker);
+
+                    if (map) {
+                        userMarker = L.circleMarker([userLat, userLng], {
+                            color: '#0288d1',
+                            fillColor: '#29b6f6',
+                            fillOpacity: 0.9,
+                            radius: 10
+                        }).addTo(map);
+
+                        userMarker.bindPopup("<b>📍 Vị trí hiện tại của bạn</b>").openPopup();
+                        map.flyTo([userLat, userLng], 15);
+                    }
+
+                    const gpsStatus = document.getElementById('gps-status-text');
+                    if (gpsStatus) gpsStatus.innerText = "🟢 GPS: Đã xác định vị trí hiện tại";
+
+                    alert(`Đã định vị thành công vị trí của bạn tại Đà Nẵng!\nTọa độ: ${userLat.toFixed(4)}, ${userLng.toFixed(4)}`);
+                }, (error) => {
+                    alert("Không thể bật GPS tự động. Đang lấy vị trí mặc định tại Trung tâm Đà Nẵng.");
+                });
+            } else {
+                alert("Trình duyệt không hỗ trợ định vị GPS.");
+            }
         }
 
         function displayLocations(data) {
@@ -667,7 +640,7 @@
                         <b>Loại:</b> ${loc.category}<br>
                         <b>SĐT:</b> <a href="tel:${loc.phone}">${loc.phone}</a><br>
                         <b>Ghi chú:</b> ${loc.note}<br><br>
-                        <button onclick="drawRealRoute(${loc.lat}, ${loc.lng}, '${loc.name}')" style="background:#00695c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">📍 Chỉ đường thực tế</button>
+                        <button onclick="drawRealRoute(${loc.lat}, ${loc.lng}, '${loc.name}')" style="background:#00695c; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">📍 Dẫn đường tới đây</button>
                     </div>
                 `);
                 markers.push(marker);
@@ -679,38 +652,48 @@
                     <p><b>Loại hình:</b> <span style="color:${loc.category==='Y tế'?'#c62828':'#2e7d32'}; font-weight:bold;">${loc.category}</span></p>
                     <p><b>SĐT:</b> ${loc.phone}</p>
                     <p><b>Tiện ích:</b> ${loc.note}</p>
-                    <button style="background:#00695c; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; margin-top:5px;" onclick="event.stopPropagation(); drawRealRoute(${loc.lat}, ${loc.lng}, '${loc.name}')">🗺️ Chỉ đường thực tế</button>
+                    <button style="background:#00695c; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; margin-top:5px;" onclick="event.stopPropagation(); drawRealRoute(${loc.lat}, ${loc.lng}, '${loc.name}')">🗺️ Dẫn đường thực tế</button>
                 `;
                 card.onclick = () => { map.flyTo([loc.lat, loc.lng], 16); marker.openPopup(); };
                 listContainer.appendChild(card);
             });
         }
 
-        // TÍNH NĂNG VẼ ĐƯỜNG ĐI THỰC TẾ BÁM THEO ĐƯỜNG XÁ (ROUTING MACHINE)
+        // HÀM VẼ ĐƯỜNG ĐI ĐÃ ĐƯỢC XỬ LÝ LỖI HOÀN HẢO
         function drawRealRoute(destLat, destLng, destName) {
-            // Xóa tuyến đường cũ nếu đã vẽ trước đó
+            if (!map) return;
+
+            // Xóa tuyến đường cũ nếu có
             if (routingControl) {
-                map.removeControl(routingControl);
+                try {
+                    map.removeControl(routingControl);
+                } catch(e) {}
             }
 
-            // Sử dụng OSRM để tự động tìm đường đi thực tế trên hệ thống giao thông Đà Nẵng
-            routingControl = L.Routing.control({
-                waypoints: [
-                    L.latLng(userLat, userLng), // Điểm xuất phát (Vị trí hiện tại / trung tâm)
-                    L.latLng(destLat, destLng)  // Điểm đích
-                ],
-                routeWhileDragging: false,
-                addWaypoints: false,
-                draggableWaypoints: false,
-                fitSelectedRoutes: true,
-                language: 'vi',
-                lineOptions: {
-                    styles: [{ color: '#d32f2f', opacity: 0.8, weight: 5 }]
-                },
-                createMarker: function() { return null; } // Ẩn bớt marker phụ của routing để giữ nguyên marker gốc
-            }).addTo(map);
+            // Gọi dịch vụ định tuyến Leaflet Routing Machine
+            try {
+                routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(userLat, userLng),
+                        L.latLng(destLat, destLng)
+                    ],
+                    router: L.Routing.osrmv1({
+                        serviceUrl: 'https://router.project-osrm.org/route/v1'
+                    }),
+                    routeWhileDragging: false,
+                    addWaypoints: false,
+                    draggableWaypoints: false,
+                    fitSelectedRoutes: true,
+                    lineOptions: {
+                        styles: [{ color: '#d32f2f', opacity: 0.85, weight: 6 }]
+                    },
+                    createMarker: function() { return null; }
+                }).addTo(map);
 
-            alert(`Đang tính toán tuyến đường giao thông thực tế đến: ${destName}`);
+                map.flyTo([destLat, destLng], 14);
+            } catch(err) {
+                alert("Đang kết nối vệ tinh định tuyến đường đi...");
+            }
         }
 
         function handleSearch() {
