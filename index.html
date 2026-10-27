@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sổ Tay WebGIS Y Tế & Du Lịch Đà Nẵng v5.0</title>
+    <title>Du Lịch An Toàn Đà Nẵng Số (v7.0)</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -11,21 +11,117 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: 'Times New Roman', Times, serif, Arial, sans-serif;
         }
 
         body {
+            background-color: #f7f9f6;
+            color: #2c3e50;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            background-color: #f0f2f5;
+            overflow: hidden;
         }
 
-        /* Header */
+        /* 1. MÀN HÌNH ĐĂNG NHẬP (LỚP 1) */
+        #auth-guard {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 105, 92, 0.96);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 2. MÀN HÌNH KHAI BÁO Y TẾ (LỚP 2 - HIỆN SAU KHI ĐĂNG NHẬP) */
+        #health-onboarding {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 77, 64, 0.95);
+            z-index: 9998;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: #fff;
+            padding: 35px;
+            border-radius: 12px;
+            width: 450px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .auth-card h2 {
+            color: #00695c;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .auth-card p {
+            font-size: 15px;
+            color: #555;
+            text-align: center;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .form-group input, .form-group select {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .auth-btn {
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-main { background-color: #00695c; color: white; }
+        .btn-main:hover { background-color: #004d40; }
+        .btn-reg { background-color: #ffb300; color: #fff; }
+        
+        .auth-switch {
+            font-size: 15px;
+            color: #00695c;
+            cursor: pointer;
+            text-decoration: underline;
+            text-align: center;
+        }
+
+        /* HEADER CHÍNH */
         header {
             background-color: #00695c;
             color: white;
-            padding: 12px 20px;
+            padding: 15px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -33,24 +129,20 @@
             z-index: 1000;
         }
 
-        header h1 {
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        header h1 { font-size: 24px; }
+        header p { font-size: 14px; color: #e0f2f1; }
 
         .header-actions {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             align-items: center;
         }
 
         .btn-action {
-            padding: 8px 16px;
-            font-size: 0.9rem;
+            padding: 10px 18px;
+            font-size: 16px;
             font-weight: bold;
-            border-radius: 20px;
+            border-radius: 24px;
             border: none;
             cursor: pointer;
             text-decoration: none;
@@ -59,37 +151,8 @@
             gap: 6px;
         }
 
-        .btn-gps {
-            background-color: #0288d1;
-            color: white;
-        }
-
-        .btn-sos {
-            background-color: #d32f2f;
-            color: white;
-            animation: pulse 1.5s infinite;
-        }
-
-        .btn-auth {
-            background-color: #ffffff;
-            color: #00695c;
-            border: 1px solid #ffffff;
-        }
-
-        .btn-register {
-            background-color: #ffb300;
-            color: #fff;
-            border: 1px solid #ffb300;
-        }
-
-        .user-info {
-            font-size: 0.9rem;
-            font-weight: bold;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 6px 12px;
-            border-radius: 15px;
-            display: none;
-        }
+        .btn-sos { background-color: #d32f2f; color: white; animation: pulse 1.5s infinite; }
+        .btn-logout { background-color: #ffffff; color: #d32f2f; }
 
         @keyframes pulse {
             0% { transform: scale(1); }
@@ -97,356 +160,471 @@
             100% { transform: scale(1); }
         }
 
-        /* Container */
-        .container {
-            display: flex;
+        /* CONTAINER ỨNG DỤNG CHÍNH */
+        .app-container {
             flex: 1;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 380px;
-            background: white;
-            padding: 18px;
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            box-shadow: 2px 0 12px rgba(0,0,0,0.1);
-            z-index: 900;
             overflow-y: auto;
+            padding: 20px;
+            gap: 20px;
         }
 
-        /* Thanh tìm kiếm */
-        .search-box {
-            width: 100%;
-            padding: 10px 14px;
-            border: 2px solid #00695c;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            outline: none;
-            transition: all 0.2s;
-        }
-
-        .search-box:focus {
-            box-shadow: 0 0 5px rgba(0, 105, 92, 0.4);
-        }
-
-        .filter-group {
-            display: flex;
-            gap: 8px;
-        }
-
-        .filter-btn {
-            flex: 1;
-            padding: 8px;
-            border: 2px solid #00695c;
-            background: white;
-            color: #00695c;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .filter-btn.active, .filter-btn:hover {
-            background: #00695c;
-            color: white;
-        }
-
-        .location-list {
+        /* MÀN HÌNH TRANG CHỦ (HOME DASHBOARD) */
+        #home-screen {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
         }
 
-        .location-card {
-            border: 1px solid #e0e0e0;
-            border-left: 5px solid #00695c;
-            border-radius: 8px;
-            padding: 12px 14px;
-            background: #fafafa;
+        .welcome-banner {
+            background: #ffffff;
+            padding: 20px 25px;
+            border-radius: 12px;
+            border-left: 6px solid #2e7d32;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .welcome-banner h3 { font-size: 22px; color: #004d40; }
+        .gps-status { font-size: 16px; color: #2e7d32; font-weight: bold; }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .module-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
+            border-top: 6px solid;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .location-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            background: #e0f2f1;
+        .module-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
         }
 
-        .location-card h3 {
-            font-size: 1.05rem;
-            color: #004d40;
-            margin-bottom: 6px;
-        }
+        .mod-1 { border-color: #0288d1; }
+        .mod-2 { border-color: #d32f2f; }
+        .mod-3 { border-color: #7b1fa2; }
+        .mod-4 { border-color: #2e7d32; }
 
-        .location-card p {
-            font-size: 0.9rem;
-            color: #424242;
-            margin-bottom: 4px;
-        }
+        .module-card h4 { font-size: 20px; font-weight: bold; }
+        .module-card p { font-size: 16px; color: #555; line-height: 1.4; }
 
-        .tag {
-            display: inline-block;
-            font-size: 0.8rem;
-            padding: 3px 10px;
+        /* CÁC MÀN HÌNH MODULE PHỤ */
+        .sub-screen {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            background: white;
             border-radius: 12px;
-            font-weight: bold;
-            margin-top: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+            height: 100%;
         }
 
-        .tag-medical { background: #ffebee; color: #c62828; }
-        .tag-tourism { background: #e8f5e9; color: #2e7d32; }
-
-        .btn-route {
-            background-color: #00695c;
+        .sub-header {
+            background: #004d40;
             color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .btn-back {
+            background: #ffffff;
+            color: #004d40;
             border: none;
-            padding: 6px 12px;
+            padding: 8px 16px;
             border-radius: 6px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 8px;
-            font-size: 0.85rem;
         }
 
-        .btn-route:hover {
-            background-color: #004d40;
-        }
+        /* MODULE 1: BẢN ĐỒ */
+        .map-layout { display: flex; flex: 1; overflow: hidden; }
+        .sidebar { width: 400px; padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; background: #fafafa; border-right: 1px solid #ddd; }
+        .search-box { width: 100%; padding: 12px; border: 2px solid #00695c; border-radius: 8px; font-size: 16px; }
+        .filter-group { display: flex; gap: 8px; }
+        .filter-btn { flex: 1; padding: 10px; border: 2px solid #00695c; background: white; color: #00695c; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        .filter-btn.active, .filter-btn:hover { background: #00695c; color: white; }
+        
+        .location-card { border: 1px solid #ddd; border-left: 6px solid #00695c; border-radius: 8px; padding: 14px; background: white; cursor: pointer; margin-bottom: 10px; }
+        .location-card h5 { font-size: 18px; color: #004d40; margin-bottom: 5px; }
+        .location-card p { font-size: 16px; color: #444; margin-bottom: 4px; }
+        
+        #map { flex: 1; height: 100%; }
 
-        /* Map */
-        #map {
-            flex: 1;
-            height: 100%;
-            width: 100%;
-        }
+        /* NỘI DUNG CÁC MODULE KHÁC */
+        .content-body { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; font-size: 18px; }
+        .content-body h3 { color: #00695c; font-size: 22px; border-bottom: 2px solid #00695c; padding-bottom: 8px; }
+        
+        .hotline-item { background: #ffebee; border-left: 6px solid #d32f2f; padding: 15px 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .hotline-item b { font-size: 20px; color: #b71c1c; }
+        .btn-call { background: #d32f2f; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 16px; }
 
-        /* Custom Label Chủ Quyền */
         .sovereignty-label {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             border: 1px solid #d32f2f;
             border-radius: 4px;
-            padding: 2px 6px;
+            padding: 4px 8px;
             font-weight: bold;
-            font-size: 11px;
+            font-size: 12px;
             color: #b71c1c;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             white-space: nowrap;
         }
 
-        /* Modal Chung */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            width: 320px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .modal-content h3 {
-            color: #00695c;
+        footer {
+            background: #fff;
+            padding: 10px 25px;
             text-align: center;
-        }
-
-        .modal-content input {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 0.95rem;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        .btn-modal {
-            padding: 8px 16px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .btn-submit { background: #00695c; color: white; }
-        .btn-cancel { background: #e0e0e0; color: #333; }
-
-        @media (max-width: 768px) {
-            .container { flex-direction: column-reverse; }
-            .sidebar { width: 100%; height: 45%; }
-            #map { height: 55%; }
+            font-size: 14px;
+            border-top: 1px solid #ddd;
+            color: #555;
         }
     </style>
 </head>
 <body>
 
+    <!-- LỚP 1: MÀN HÌNH ĐĂNG NHẬP -->
+    <div id="auth-guard">
+        <div class="auth-card" id="login-box">
+            <h2>🏥 DU LỊCH AN TOÀN ĐÀ NẴNG SỐ</h2>
+            <p>Vui lòng đăng nhập để tiếp tục</p>
+            <div class="form-group">
+                <label>Tên đăng nhập:</label>
+                <input type="text" id="username" placeholder="vd: admin">
+            </div>
+            <div class="form-group">
+                <label>Mật khẩu:</label>
+                <input type="password" id="password" placeholder="vd: 123456">
+            </div>
+            <button class="auth-btn btn-main" onclick="handleLogin()">Tiếp tục</button>
+            <span class="auth-switch" onclick="toggleAuthMode('reg')">Chưa có tài khoản? Đăng ký ngay</span>
+        </div>
+
+        <div class="auth-card" id="reg-box" style="display: none;">
+            <h2>📝 ĐĂNG KÝ THÀNH VIÊN</h2>
+            <p>Tạo tài khoản mới</p>
+            <div class="form-group">
+                <label>Tên đăng nhập:</label>
+                <input type="text" id="reg-user" placeholder="Nhập tên đăng nhập">
+            </div>
+            <div class="form-group">
+                <label>Mật khẩu:</label>
+                <input type="password" id="reg-pass" placeholder="Nhập mật khẩu">
+            </div>
+            <button class="auth-btn btn-reg" onclick="handleRegister()">Đăng ký tài khoản</button>
+            <span class="auth-switch" onclick="toggleAuthMode('login')">Đã có tài khoản? Đăng nhập</span>
+        </div>
+    </div>
+
+    <!-- LỚP 2: MÀN HÌNH KHAI BÁO Y TẾ CÁ NHÂN (HIỆN NGAY SAU KHI ĐĂNG NHẬP) -->
+    <div id="health-onboarding">
+        <div class="auth-card" style="width: 550px;">
+            <h2>📋 SỔ TAY SỨC KHỎE CÁ NHÂN</h2>
+            <p>Vui lòng khai báo thông tin y tế trước khi truy cập bản đồ chỉ dẫn</p>
+            
+            <div class="form-group">
+                <label>Họ và tên du khách:</label>
+                <input type="text" id="onboard-name" value="Nguyễn Văn An">
+            </div>
+            <div class="form-group">
+                <label>Năm sinh / Tuổi:</label>
+                <input type="text" id="onboard-age" value="1958 (68 tuổi)">
+            </div>
+            <div class="form-group">
+                <label>Nhóm máu:</label>
+                <select id="onboard-blood"><option>Nhóm O</option><option>Nhóm A</option><option>Nhóm B</option><option>Nhóm AB</option></select>
+            </div>
+            <div class="form-group">
+                <label>Bệnh nền cần lưu ý:</label>
+                <input type="text" id="onboard-ill" value="Cao huyết áp, Tim mạch nhẹ">
+            </div>
+            <div class="form-group">
+                <label>SĐT Người thân khẩn cấp:</label>
+                <input type="text" id="onboard-phone" value="0905123456 (Con trai)">
+            </div>
+
+            <button class="auth-btn btn-main" onclick="submitHealthOnboarding()">💾 LƯU & CHUYỂN TỚI BẢN ĐỒ</button>
+        </div>
+    </div>
+
+    <!-- HEADER CHÍNH -->
     <header>
-        <h1>🏥 WebGIS Sổ Tay Số Đà Nẵng (v5.0)</h1>
+        <div>
+            <h1>DU LỊCH AN TOÀN ĐÀ NẴNG SỐ</h1>
+            <p>Hỗ trợ an toàn sức khỏe cho du khách cao tuổi</p>
+        </div>
         <div class="header-actions">
-            <button class="btn-action btn-gps" onclick="locateUser()">📍 Vị trí của tôi</button>
             <a href="tel:115" class="btn-action btn-sos">🚨 CẤP CỨU 115</a>
-            <span class="user-info" id="user-info">👤 Thành viên</span>
-            <button class="btn-action btn-register" id="btn-reg-ui" onclick="openRegisterModal()">📝 Tạo tài khoản</button>
-            <button class="btn-action btn-auth" id="btn-auth" onclick="handleAuth()">🔑 Đăng nhập</button>
+            <button class="btn-action btn-logout" onclick="handleLogout()">🚪 Đăng xuất</button>
         </div>
     </header>
 
-    <div class="container">
-        <div class="sidebar">
-            <h2>Tra cứu Địa điểm</h2>
-            <!-- Ô tìm kiếm thời gian thực -->
-            <input type="text" id="search-input" class="search-box" placeholder="🔍 Nhập tên bệnh viện, địa điểm..." oninput="handleSearch()">
-            
-            <div class="filter-group">
-                <button class="filter-btn active" onclick="filterLocations('all', event)">Tất cả</button>
-                <button class="filter-btn" onclick="filterLocations('Y tế', event)">🏥 Y tế</button>
-                <button class="filter-btn" onclick="filterLocations('Du lịch', event)">🏨 Du lịch</button>
+    <!-- CONTAINER ỨNG DỤNG CHÍNH -->
+    <div class="app-container">
+
+        <!-- TRANG CHỦ (4 MODULE) -->
+        <div id="home-screen">
+            <div class="welcome-banner">
+                <div>
+                    <h3 id="welcome-text">Xin chào, Quý du khách! Bạn cần hỗ trợ gì hôm nay?</h3>
+                </div>
+                <div class="gps-status">🟢 GPS: Đã định vị tại Đà Nẵng</div>
             </div>
 
-            <div class="location-list" id="location-list"></div>
-        </div>
-
-        <div id="map"></div>
-    </div>
-
-    <!-- Modal Đăng nhập -->
-    <div class="modal" id="login-modal">
-        <div class="modal-content">
-            <h3>Đăng nhập hệ thống</h3>
-            <input type="text" id="username" placeholder="Tên đăng nhập (admin)">
-            <input type="password" id="password" placeholder="Mật khẩu (123456)">
-            <div class="modal-actions">
-                <button class="btn-modal btn-cancel" onclick="closeLoginModal()">Hủy</button>
-                <button class="btn-modal btn-submit" onclick="submitLogin()">Đăng nhập</button>
+            <div class="modules-grid">
+                <div class="module-card mod-1" onclick="openModule('module-map')">
+                    <h4>🗺️ [ MODULE 1 ] BẢN ĐỒ Y TẾ ĐÀ NẴng</h4>
+                    <p>Tra cứu bệnh viện lớn, trung tâm y tế, trạm y tế phường và chỉ đường thông minh.</p>
+                </div>
+                <div class="module-card mod-2" onclick="openModule('module-hotline')">
+                    <h4>📞 [ MODULE 2 ] DANH BẠ HOTLINE KHẨN CẤP</h4>
+                    <p>Hotline Cấp cứu 115, cứu hộ bờ biển, số điện thoại bệnh viện trọng điểm.</p>
+                </div>
+                <div class="module-card mod-3" onclick="openModule('module-health')">
+                    <h4>📋 [ MODULE 3 ] SỔ TAY SỨC KHỎE CÁ NHÂN</h4>
+                    <p>Xem và cập nhật lại nhóm máu, tiền sử bệnh nền, số điện thoại người thân.</p>
+                </div>
+                <div class="module-card mod-4" onclick="openModule('module-tour')">
+                    <h4>🌿 [ MODULE 4 ] TOUR NGHỈ DƯỠNG AN TOÀN</h4>
+                    <p>Gợi ý lịch trình tĩnh dưỡng 1 ngày, 2N1Đ, 3N2Đ nhịp độ chậm, an toàn tuyệt đối.</p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Modal Tạo tài khoản -->
-    <div class="modal" id="register-modal">
-        <div class="modal-content">
-            <h3>Đăng ký tài khoản mới</h3>
-            <input type="text" id="reg-username" placeholder="Chọn tên đăng nhập">
-            <input type="password" id="reg-password" placeholder="Mật khẩu của bạn">
-            <div class="modal-actions">
-                <button class="btn-modal btn-cancel" onclick="closeRegisterModal()">Hủy</button>
-                <button class="btn-modal btn-submit" onclick="submitRegister()">Đăng ký</button>
+        <!-- MODULE 1: BẢN ĐỒ -->
+        <div id="module-map" class="sub-screen">
+            <div class="sub-header">
+                <span>Bản Đồ Y Tế & Tiện Ích Đà Nẵng</span>
+                <button class="btn-back" onclick="goHome()">⬅ Về Trang Chủ</button>
+            </div>
+            <div class="map-layout">
+                <div class="sidebar">
+                    <input type="text" id="search-input" class="search-box" placeholder="🔍 Tìm bệnh viện, cơ sở..." oninput="handleSearch()">
+                    <div class="filter-group">
+                        <button class="filter-btn active" onclick="filterLocations('all', event)">Tất cả</button>
+                        <button class="filter-btn" onclick="filterLocations('Y tế', event)">🏥 Y tế</button>
+                        <button class="filter-btn" onclick="filterLocations('Du lịch', event)">🏨 Du lịch</button>
+                    </div>
+                    <div id="location-list"></div>
+                </div>
+                <div id="map"></div>
             </div>
         </div>
+
+        <!-- MODULE 2: HOTLINE -->
+        <div id="module-hotline" class="sub-screen">
+            <div class="sub-header">
+                <span>Danh Bạ Hotline Khẩn Cấp Y Tế</span>
+                <button class="btn-back" onclick="goHome()">⬅ Về Trang Chủ</button>
+            </div>
+            <div class="content-body">
+                <h3>Các Tổng Đài Cứu Hộ & Cấp Cứu Trọng Điểm</h3>
+                <div class="hotline-item">
+                    <div><b>Trung tâm Cấp cứu Y tế 115 Đà Nẵng</b><br><span style="font-size:16px; color:#555;">Thường trực 24/7 xử lý cấp cứu khẩn cấp</span></div>
+                    <a href="tel:115" class="btn-call">GỌI 115</a>
+                </div>
+                <div class="hotline-item">
+                    <div><b>Ban Quản lý Bán đảo Sơn Trà & Các bãi biển du lịch Đà Nẵng</b><br><span style="font-size:16px; color:#555;">Hotline Cứu hộ bờ biển & sự cố du lịch</span></div>
+                    <a href="tel:02363920444" class="btn-call">GỌI 0236 3920 444</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODULE 3: SỔ TAY SỨC KHỎE -->
+        <div id="module-health" class="sub-screen">
+            <div class="sub-header">
+                <span>Sổ Tay Sức Khỏe Cá Nhân</span>
+                <button class="btn-back" onclick="goHome()">⬅ Về Trang Chủ</button>
+            </div>
+            <div class="content-body">
+                <h3>Thông Tin Y Tế Đã Khai Báo</h3>
+                <div id="health-display-card" style="background:#e8f5e9; padding:20px; border-radius:8px; border-left:6px solid #2e7d32;">
+                    <!-- Dữ liệu tự động điền từ form khai báo -->
+                </div>
+                <button class="auth-btn btn-main" style="width: 250px;" onclick="openModule('module-map')">🗺️ ĐI TỚI BẢN ĐỒ NGAY</button>
+            </div>
+        </div>
+
+        <!-- MODULE 4: TOUR -->
+        <div id="module-tour" class="sub-screen">
+            <div class="sub-header">
+                <span>Tour Nghỉ Dưỡng & Lịch Trình An Toàn</span>
+                <button class="btn-back" onclick="goHome()">⬅ Về Trang Chủ</button>
+            </div>
+            <div class="content-body">
+                <h3>Lịch Trình Gợi Ý: "Thành Phố An Lành - Dưỡng Sinh Ven Biển" (1 Ngày)</h3>
+                <p><b>Đặc điểm Tour:</b> Nhịp độ di chuyển chậm, đường bằng phẳng, có ghế nghỉ chân, luôn nằm trong bán kính cách cơ sở y tế trọng điểm dưới 10 phút đi xe.</p>
+            </div>
+        </div>
+
     </div>
+
+    <footer>
+        "Sổ tay du lịch số là công cụ hỗ trợ thông tin không gian và chỉ dẫn an toàn." — Phát triển bởi Nhóm NCKH 26CDL, ĐH Sư Phạm - ĐH Đà Nẵng.
+    </footer>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        let isLoggedIn = false;
-        let currentUserName = "";
-        let userLat = 16.0544; // Mặc định trung tâm Đà Nẵng
+        let map = null;
+        let userLat = 16.0544;
         let userLng = 108.2022;
-        let routingLine = null; // Biến lưu đường vẽ chỉ dẫn
+        let routingLine = null;
+        let markers = [];
 
         const locations = [
-            {
-                name: "Bệnh viện C Đà Nẵng",
-                category: "Y tế",
-                lat: 16.0681,
-                lng: 108.2145,
-                phone: "0236 3821 118",
-                note: "Cấp cứu 24/7, có lối xe lăn"
-            },
-            {
-                name: "Bệnh viện Đa khoa Đà Nẵng",
-                category: "Y tế",
-                lat: 16.0718,
-                lng: 108.2132,
-                phone: "0236 3821 115",
-                note: "Trung tâm cấp cứu hàng đầu Đà Nẵng"
-            },
-            {
-                name: "Bệnh viện Y học Cổ truyền Đà Nẵng",
-                category: "Y tế",
-                lat: 16.0335,
-                lng: 108.2120,
-                phone: "0236 3696 123",
-                note: "Phục hồi chức năng và điều trị cho người cao tuổi"
-            },
-            {
-                name: "Công viên APEC Đà Nẵng",
-                category: "Du lịch",
-                lat: 16.0602,
-                lng: 108.2232,
-                phone: "Không có",
-                note: "Lối đi bằng phẳng, nhiều ghế nghỉ chân"
-            },
-            {
-                name: "Danh thắng Ngũ Hành Sơn",
-                category: "Du lịch",
-                lat: 16.0042,
-                lng: 108.2633,
-                phone: "0236 3961 114",
-                note: "Có hệ thống thang máy hỗ trợ người cao tuổi"
-            }
+            { name: "Bệnh viện C Đà Nẵng", category: "Y tế", lat: 16.0681, lng: 108.2145, phone: "0236 3821 118", note: "Cấp cứu 24/7, chuyên khoa Lão khoa" },
+            { name: "Bệnh viện Đa khoa Đà Nẵng", category: "Y tế", lat: 16.0718, lng: 108.2132, phone: "0236 3821 115", note: "Trung tâm cấp cứu hàng đầu Đà Nẵng" },
+            { name: "Bệnh viện Y học Cổ truyền Đà Nẵng", category: "Y tế", lat: 16.0335, lng: 108.2120, phone: "0236 3696 123", note: "Phục hồi chức năng và điều trị người cao tuổi" },
+            { name: "Công viên APEC Đà Nẵng", category: "Du lịch", lat: 16.0602, lng: 108.2232, phone: "Không có", note: "Lối đi bằng phẳng, nhiều ghế nghỉ chân" },
+            { name: "Danh thắng Ngũ Hành Sơn", category: "Du lịch", lat: 16.0042, lng: 108.2633, phone: "0236 3961 114", note: "Có hệ thống thang máy hỗ trợ người cao tuổi" }
         ];
 
-        const map = L.map('map').setView([16.0544, 108.2022], 12);
+        function toggleAuthMode(mode) {
+            if (mode === 'reg') {
+                document.getElementById('login-box').style.display = 'none';
+                document.getElementById('reg-box').style.display = 'flex';
+            } else {
+                document.getElementById('reg-box').style.display = 'none';
+                document.getElementById('login-box').style.display = 'flex';
+            }
+        }
 
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 18,
-            attribution: 'Tiles &copy; Esri'
-        }).addTo(map);
+        function handleRegister() {
+            const u = document.getElementById('reg-user').value.trim();
+            const p = document.getElementById('reg-pass').value.trim();
+            if(u && p) {
+                localStorage.setItem('sys_user', u);
+                localStorage.setItem('sys_pass', p);
+                alert("Đăng ký thành công! Hãy đăng nhập.");
+                toggleAuthMode('login');
+            } else {
+                alert("Vui lòng điền đầy đủ thông tin.");
+            }
+        }
 
-        // Nhãn chủ quyền Quần đảo Hoàng Sa và Trường Sa
-        L.marker([16.8300, 112.0000], {
-            icon: L.divIcon({ className: 'sovereignty-label', html: '🇻🇳 Quần đảo Hoàng Sa (Đà Nẵng, VN)' })
-        }).addTo(map);
+        // Bước 1: Đăng nhập thành công -> Hiện màn hình Khai báo Y tế (Lớp 2)
+        function handleLogin() {
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value.trim();
+            const savedU = localStorage.getItem('sys_user');
+            const savedP = localStorage.getItem('sys_pass');
 
-        L.marker([10.7500, 115.8300], {
-            icon: L.divIcon({ className: 'sovereignty-label', html: '🇻🇳 Quần đảo Trường Sa (Khánh Hòa, VN)' })
-        }).addTo(map);
+            if ((u === "admin" && p === "123456") || (u === savedU && p === savedP)) {
+                document.getElementById('auth-guard').style.display = 'none'; // Tắt màn hình đăng nhập
+                document.getElementById('health-onboarding').style.display = 'flex'; // Bật màn hình khai báo y tế
+                document.getElementById('welcome-text').innerText = `Xin chào, ${u}!`;
+            } else {
+                alert("Sai tên đăng nhập hoặc mật khẩu! (Gợi ý: admin / 123456)");
+            }
+        }
 
-        let markers = [];
-        let userMarker = null;
+        // Bước 2: Lưu khai báo y tế -> Mở khóa Trang chủ và chuyển thẳng tới Bản đồ
+        function submitHealthOnboarding() {
+            const name = document.getElementById('onboard-name').value;
+            const age = document.getElementById('onboard-age').value;
+            const blood = document.getElementById('onboard-blood').value;
+            const ill = document.getElementById('onboard-ill').value;
+            const phone = document.getElementById('onboard-phone').value;
+
+            // Lưu vào localStorage để xem lại ở Module 3
+            localStorage.setItem('h_name', name);
+            localStorage.setItem('h_age', age);
+            localStorage.setItem('h_blood', blood);
+            localStorage.setItem('h_ill', ill);
+            localStorage.setItem('h_phone', phone);
+
+            updateHealthCardDisplay();
+
+            // Tắt màn hình khai báo, đưa người dùng vào hệ thống và mở ngay bản đồ
+            document.getElementById('health-onboarding').style.display = 'none';
+            openModule('module-map');
+        }
+
+        function updateHealthCardDisplay() {
+            document.getElementById('health-display-card').innerHTML = `
+                <p><b>Họ và tên:</b> ${localStorage.getItem('h_name')}</p>
+                <p><b>Năm sinh:</b> ${localStorage.getItem('h_age')}</p>
+                <p><b>Nhóm máu:</b> ${localStorage.getItem('h_blood')}</p>
+                <p><b>Bệnh nền:</b> ${localStorage.getItem('h_ill')}</p>
+                <p><b>SĐT Người thân:</b> ${localStorage.getItem('h_phone')}</p>
+            `;
+        }
+
+        function handleLogout() {
+            document.getElementById('health-onboarding').style.display = 'none';
+            document.getElementById('auth-guard').style.display = 'flex';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            goHome();
+        }
+
+        function openModule(moduleId) {
+            document.getElementById('home-screen').style.display = 'none';
+            document.querySelectorAll('.sub-screen').forEach(el => el.style.display = 'none');
+            document.getElementById(moduleId).style.display = 'flex';
+
+            if (moduleId === 'module-map') {
+                setTimeout(() => { initMap(); }, 200);
+            }
+        }
+
+        function goHome() {
+            document.querySelectorAll('.sub-screen').forEach(el => el.style.display = 'none');
+            document.getElementById('home-screen').style.display = 'flex';
+        }
+
+        function initMap() {
+            if (map) { map.invalidateSize(); return; }
+            map = L.map('map').setView([16.0544, 108.2022], 13);
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 18, attribution: 'Tiles &copy; Esri'
+            }).addTo(map);
+
+            L.marker([16.8300, 112.0000], { icon: L.divIcon({ className: 'sovereignty-label', html: '🇻🇳 Quần đảo Hoàng Sa (Đà Nẵng, VN)' }) }).addTo(map);
+            L.marker([10.7500, 115.8300], { icon: L.divIcon({ className: 'sovereignty-label', html: '🇻🇳 Quần đảo Trường Sa (Khánh Hòa, VN)' }) }).addTo(map);
+
+            displayLocations(locations);
+        }
 
         function displayLocations(data) {
             markers.forEach(m => map.removeLayer(m));
             markers = [];
-
             const listContainer = document.getElementById('location-list');
             listContainer.innerHTML = '';
-
-            if (data.length === 0) {
-                listContainer.innerHTML = '<p style="text-align:center; color:#777; padding:10px;">Không tìm thấy địa điểm phù hợp.</p>';
-                return;
-            }
 
             data.forEach((loc) => {
                 const marker = L.marker([loc.lat, loc.lng]).addTo(map);
                 marker.bindPopup(`
-                    <div style="font-size: 14px;">
+                    <div style="font-size: 15px;">
                         <b style="color: #00695c;">${loc.name}</b><br>
                         <b>Loại:</b> ${loc.category}<br>
                         <b>SĐT:</b> <a href="tel:${loc.phone}">${loc.phone}</a><br>
                         <b>Ghi chú:</b> ${loc.note}<br><br>
-                        <button onclick="drawRoute(${loc.lat}, ${loc.lng}, '${loc.name}')" style="background:#00695c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">📍 Chỉ đường tới đây</button>
+                        <button onclick="drawRoute(${loc.lat}, ${loc.lng}, '${loc.name}')" style="background:#00695c; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">📍 Chỉ đường tới đây</button>
                     </div>
                 `);
                 markers.push(marker);
@@ -454,62 +632,24 @@
                 const card = document.createElement('div');
                 card.className = 'location-card';
                 card.innerHTML = `
-                    <h3>${loc.name}</h3>
+                    <h5>${loc.name}</h5>
                     <p><b>SĐT:</b> ${loc.phone}</p>
                     <p><b>Tiện ích:</b> ${loc.note}</p>
-                    <span class="tag ${loc.category === 'Y tế' ? 'tag-medical' : 'tag-tourism'}">${loc.category}</span><br>
-                    <button class="btn-route" onclick="event.stopPropagation(); drawRoute(${loc.lat}, ${loc.lng}, '${loc.name}')">🗺️ Vẽ đường đi</button>
+                    <button style="background:#00695c; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; margin-top:5px;" onclick="event.stopPropagation(); drawRoute(${loc.lat}, ${loc.lng}, '${loc.name}')">🗺️ Vẽ đường đi</button>
                 `;
-
-                card.onclick = () => {
-                    map.flyTo([loc.lat, loc.lng], 16);
-                    marker.openPopup();
-                };
-
+                card.onclick = () => { map.flyTo([loc.lat, loc.lng], 16); marker.openPopup(); };
                 listContainer.appendChild(card);
             });
         }
 
-        // Tính khoảng cách giữa 2 điểm tọa độ (km)
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Bán kính trái đất tính bằng km
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return (R * c).toFixed(2);
-        }
-
-        // Chức năng vẽ đường chỉ dẫn từ vị trí người dùng đến địa điểm
         function drawRoute(destLat, destLng, destName) {
-            // Xóa đường vẽ cũ nếu có
-            if (routingLine) {
-                map.removeLayer(routingLine);
-            }
-
-            // Vẽ đường thẳng nối từ vị trí hiện tại đến điểm đích
-            const latlngs = [
-                [userLat, userLng],
-                [destLat, destLng]
-            ];
-
-            routingLine = L.polyline(latlngs, {
-                color: '#d32f2f',
-                weight: 4,
-                dashArray: '8, 8', // Tạo hiệu ứng đường đứt nét chỉ đường
-                opacity: 0.8
-            }).addTo(map);
-
-            // Zoom bản đồ vừa khung đường đi
+            if (routingLine) map.removeLayer(routingLine);
+            const latlngs = [[userLat, userLng], [destLat, destLng]];
+            routingLine = L.polyline(latlngs, { color: '#d32f2f', weight: 4, dashArray: '8, 8' }).addTo(map);
             map.fitBounds(routingLine.getBounds(), { padding: [50, 50] });
-
-            const dist = calculateDistance(userLat, userLng, destLat, destLng);
-            alert(`Đã vẽ tuyến đường đến: ${destName}\nKhoảng cách ước tính: ${dist} km`);
+            alert(`Đã vẽ tuyến đường chỉ dẫn đến: ${destName}`);
         }
 
-        // Tìm kiếm thời gian thực
         function handleSearch() {
             const keyword = document.getElementById('search-input').value.toLowerCase().trim();
             const filtered = locations.filter(l => l.name.toLowerCase().includes(keyword) || l.note.toLowerCase().includes(keyword));
@@ -519,105 +659,10 @@
         function filterLocations(cat, event) {
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             if(event) event.target.classList.add('active');
-
-            document.getElementById('search-input').value = ''; // Reset ô tìm kiếm khi bấm lọc
-
-            if (cat === 'all') {
-                displayLocations(locations);
-            } else {
-                const filtered = locations.filter(l => l.category === cat);
-                displayLocations(filtered);
-            }
+            document.getElementById('search-input').value = '';
+            if (cat === 'all') { displayLocations(locations); } 
+            else { displayLocations(locations.filter(l => l.category === cat)); }
         }
-
-        function locateUser() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    userLat = position.coords.latitude;
-                    userLng = position.coords.longitude;
-
-                    if (userMarker) map.removeLayer(userMarker);
-
-                    userMarker = L.circleMarker([userLat, userLng], {
-                        color: '#0288d1',
-                        fillColor: '#29b6f6',
-                        fillOpacity: 0.9,
-                        radius: 10
-                    }).addTo(map);
-
-                    userMarker.bindPopup("<b>📍 Vị trí hiện tại của bạn</b>").openPopup();
-                    map.flyTo([userLat, userLng], 15);
-                }, () => {
-                    alert("Không thể lấy vị trí hiện tại. Đang dùng mặc định trung tâm Đà Nẵng.");
-                });
-            } else {
-                alert("Trình duyệt không hỗ trợ định vị GPS.");
-            }
-        }
-
-        function handleAuth() {
-            if (isLoggedIn) {
-                isLoggedIn = false;
-                document.getElementById('user-info').style.display = 'none';
-                document.getElementById('btn-auth').innerText = '🔑 Đăng nhập';
-                document.getElementById('btn-reg-ui').style.display = 'inline-flex';
-                alert("Đã đăng xuất thành công!");
-            } else {
-                document.getElementById('login-modal').style.display = 'flex';
-            }
-        }
-
-        function closeLoginModal() {
-            document.getElementById('login-modal').style.display = 'none';
-        }
-
-        function submitLogin() {
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-            const savedUser = localStorage.getItem('reg_user');
-            const savedPass = localStorage.getItem('reg_pass');
-
-            if ((user === "admin" && pass === "123456") || (user === savedUser && pass === savedPass)) {
-                isLoggedIn = true;
-                currentUserName = user;
-                document.getElementById('user-info').innerText = `👤 ${user}`;
-                document.getElementById('user-info').style.display = 'inline-block';
-                document.getElementById('btn-auth').innerText = '🚪 Đăng xuất';
-                document.getElementById('btn-reg-ui').style.display = 'none';
-                closeLoginModal();
-                alert(`Đăng nhập thành công với tài khoản: ${user}!`);
-            } else {
-                alert("Tài khoản hoặc mật khẩu không đúng!");
-            }
-        }
-
-        function openRegisterModal() {
-            document.getElementById('register-modal').style.display = 'flex';
-        }
-
-        function closeRegisterModal() {
-            document.getElementById('register-modal').style.display = 'none';
-        }
-
-        function submitRegister() {
-            const rUser = document.getElementById('reg-username').value;
-            const rPass = document.getElementById('reg-password').value;
-
-            if (rUser && rPass) {
-                localStorage.setItem('reg_user', rUser);
-                localStorage.setItem('reg_pass', rPass);
-                alert("Đăng ký tài khoản thành công! Bạn có thể dùng tài khoản này để đăng nhập ngay.");
-                closeRegisterModal();
-            } else {
-                alert("Vui lòng điền đầy đủ tên đăng nhập và mật khẩu!");
-            }
-        }
-
-        displayLocations(locations);
-        
-        setTimeout(() => {
-            map.invalidateSize();
-        }, 200);
     </script>
 </body>
 </html>
