@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sổ Tay WebGIS Y Tế & Du Lịch Đà Nẵng v4.3</title>
+    <title>Sổ Tay WebGIS Y Tế & Du Lịch Đà Nẵng v4.4</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -193,6 +193,19 @@
             width: 100%;
         }
 
+        /* Custom Label Styling cho Quần đảo */
+        .sovereignty-label {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #d32f2f;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-weight: bold;
+            font-size: 11px;
+            color: #b71c1c;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            white-space: nowrap;
+        }
+
         /* Modal Chung */
         .modal {
             display: none;
@@ -257,7 +270,7 @@
 <body>
 
     <header>
-        <h1>🏥 WebGIS Sổ Tay Số Đà Nẵng (v4.3)</h1>
+        <h1>🏥 WebGIS Sổ Tay Số Đà Nẵng (v4.4)</h1>
         <div class="header-actions">
             <button class="btn-action btn-gps" onclick="locateUser()">📍 Vị trí của tôi</button>
             <a href="tel:115" class="btn-action btn-sos">🚨 CẤP CỨU 115</a>
@@ -295,7 +308,7 @@
         </div>
     </div>
 
-    <!-- Modal Tạo tài khoản (Đăng ký) -->
+    <!-- Modal Tạo tài khoản -->
     <div class="modal" id="register-modal">
         <div class="modal-content">
             <h3>Đăng ký tài khoản mới</h3>
@@ -357,11 +370,28 @@
             }
         ];
 
-        const map = L.map('map').setView([16.0544, 108.2022], 13);
+        const map = L.map('map').setView([16.0544, 108.2022], 10);
 
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
             maxZoom: 18,
             attribution: 'Tiles &copy; Esri'
+        }).addTo(map);
+
+        /* THÊM NHÃN CHỦ QUYỀN QUẦN ĐẢO HOÀNG SA VÀ TRƯỜNG SA */
+        // Hoàng Sa (Tọa độ tham chiếu vùng biển Đông)
+        const hoangSaMarker = L.marker([16.8300, 112.0000], {
+            icon: L.divIcon({
+                className: 'sovereignty-label',
+                html: '🇻🇳 Quần đảo Hoàng Sa (Đà Nẵng, VN)'
+            })
+        }).addTo(map);
+
+        // Trường Sa (Tọa độ tham chiếu vùng biển Đông)
+        const truongSaMarker = L.marker([10.7500, 115.8300], {
+            icon: L.divIcon({
+                className: 'sovereignty-label',
+                html: '🇻🇳 Quần đảo Trường Sa (Khánh Hòa, VN)'
+            })
         }).addTo(map);
 
         let markers = [];
@@ -441,7 +471,6 @@
             }
         }
 
-        /* Quản lý Đăng nhập & Đăng ký */
         function handleAuth() {
             if (isLoggedIn) {
                 isLoggedIn = false;
