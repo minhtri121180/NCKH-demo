@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sổ Tay WebGIS Y Tế & Du Lịch Đà Nẵng v4.4</title>
+    <title>Sổ Tay WebGIS Y Tế & Du Lịch Đà Nẵng v5.0</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -118,6 +118,21 @@
             overflow-y: auto;
         }
 
+        /* Thanh tìm kiếm */
+        .search-box {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #00695c;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-box:focus {
+            box-shadow: 0 0 5px rgba(0, 105, 92, 0.4);
+        }
+
         .filter-group {
             display: flex;
             gap: 8px;
@@ -125,7 +140,7 @@
 
         .filter-btn {
             flex: 1;
-            padding: 10px;
+            padding: 8px;
             border: 2px solid #00695c;
             background: white;
             color: #00695c;
@@ -186,6 +201,22 @@
         .tag-medical { background: #ffebee; color: #c62828; }
         .tag-tourism { background: #e8f5e9; color: #2e7d32; }
 
+        .btn-route {
+            background-color: #00695c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+            font-size: 0.85rem;
+        }
+
+        .btn-route:hover {
+            background-color: #004d40;
+        }
+
         /* Map */
         #map {
             flex: 1;
@@ -193,7 +224,7 @@
             width: 100%;
         }
 
-        /* Custom Label Styling cho Quần đảo */
+        /* Custom Label Chủ Quyền */
         .sovereignty-label {
             background: rgba(255, 255, 255, 0.9);
             border: 1px solid #d32f2f;
@@ -270,7 +301,7 @@
 <body>
 
     <header>
-        <h1>🏥 WebGIS Sổ Tay Số Đà Nẵng (v4.4)</h1>
+        <h1>🏥 WebGIS Sổ Tay Số Đà Nẵng (v5.0)</h1>
         <div class="header-actions">
             <button class="btn-action btn-gps" onclick="locateUser()">📍 Vị trí của tôi</button>
             <a href="tel:115" class="btn-action btn-sos">🚨 CẤP CỨU 115</a>
@@ -282,7 +313,10 @@
 
     <div class="container">
         <div class="sidebar">
-            <h2>Bộ Lọc Địa Điểm</h2>
+            <h2>Tra cứu Địa điểm</h2>
+            <!-- Ô tìm kiếm thời gian thực -->
+            <input type="text" id="search-input" class="search-box" placeholder="🔍 Nhập tên bệnh viện, địa điểm..." oninput="handleSearch()">
+            
             <div class="filter-group">
                 <button class="filter-btn active" onclick="filterLocations('all', event)">Tất cả</button>
                 <button class="filter-btn" onclick="filterLocations('Y tế', event)">🏥 Y tế</button>
@@ -326,6 +360,9 @@
     <script>
         let isLoggedIn = false;
         let currentUserName = "";
+        let userLat = 16.0544; // Mặc định trung tâm Đà Nẵng
+        let userLng = 108.2022;
+        let routingLine = null; // Biến lưu đường vẽ chỉ dẫn
 
         const locations = [
             {
@@ -370,28 +407,20 @@
             }
         ];
 
-        const map = L.map('map').setView([16.0544, 108.2022], 10);
+        const map = L.map('map').setView([16.0544, 108.2022], 12);
 
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
             maxZoom: 18,
             attribution: 'Tiles &copy; Esri'
         }).addTo(map);
 
-        /* THÊM NHÃN CHỦ QUYỀN QUẦN ĐẢO HOÀNG SA VÀ TRƯỜNG SA */
-        // Hoàng Sa (Tọa độ tham chiếu vùng biển Đông)
-        const hoangSaMarker = L.marker([16.8300, 112.0000], {
-            icon: L.divIcon({
-                className: 'sovereignty-label',
-                html: '🇻🇳 Quần đảo Hoàng Sa (Đà Nẵng, VN)'
-            })
+        // Nhãn chủ quyền Quần đảo Hoàng Sa và Trường Sa
+        L.marker([16.8300, 112.0000], {
+            icon: L.divIcon({ className: 'sovereignty-label', html: '🇻🇳 Quần đảo Hoàng Sa (Đà Nẵng, VN)' })
         }).addTo(map);
 
-        // Trường Sa (Tọa độ tham chiếu vùng biển Đông)
-        const truongSaMarker = L.marker([10.7500, 115.8300], {
-            icon: L.divIcon({
-                className: 'sovereignty-label',
-                html: '🇻🇳 Quần đảo Trường Sa (Khánh Hòa, VN)'
-            })
+        L.marker([10.7500, 115.8300], {
+            icon: L.divIcon({ className: 'sovereignty-label', html: '🇻🇳 Quần đảo Trường Sa (Khánh Hòa, VN)' })
         }).addTo(map);
 
         let markers = [];
@@ -404,6 +433,11 @@
             const listContainer = document.getElementById('location-list');
             listContainer.innerHTML = '';
 
+            if (data.length === 0) {
+                listContainer.innerHTML = '<p style="text-align:center; color:#777; padding:10px;">Không tìm thấy địa điểm phù hợp.</p>';
+                return;
+            }
+
             data.forEach((loc) => {
                 const marker = L.marker([loc.lat, loc.lng]).addTo(map);
                 marker.bindPopup(`
@@ -411,7 +445,8 @@
                         <b style="color: #00695c;">${loc.name}</b><br>
                         <b>Loại:</b> ${loc.category}<br>
                         <b>SĐT:</b> <a href="tel:${loc.phone}">${loc.phone}</a><br>
-                        <b>Ghi chú:</b> ${loc.note}
+                        <b>Ghi chú:</b> ${loc.note}<br><br>
+                        <button onclick="drawRoute(${loc.lat}, ${loc.lng}, '${loc.name}')" style="background:#00695c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">📍 Chỉ đường tới đây</button>
                     </div>
                 `);
                 markers.push(marker);
@@ -422,7 +457,8 @@
                     <h3>${loc.name}</h3>
                     <p><b>SĐT:</b> ${loc.phone}</p>
                     <p><b>Tiện ích:</b> ${loc.note}</p>
-                    <span class="tag ${loc.category === 'Y tế' ? 'tag-medical' : 'tag-tourism'}">${loc.category}</span>
+                    <span class="tag ${loc.category === 'Y tế' ? 'tag-medical' : 'tag-tourism'}">${loc.category}</span><br>
+                    <button class="btn-route" onclick="event.stopPropagation(); drawRoute(${loc.lat}, ${loc.lng}, '${loc.name}')">🗺️ Vẽ đường đi</button>
                 `;
 
                 card.onclick = () => {
@@ -434,9 +470,57 @@
             });
         }
 
+        // Tính khoảng cách giữa 2 điểm tọa độ (km)
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Bán kính trái đất tính bằng km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return (R * c).toFixed(2);
+        }
+
+        // Chức năng vẽ đường chỉ dẫn từ vị trí người dùng đến địa điểm
+        function drawRoute(destLat, destLng, destName) {
+            // Xóa đường vẽ cũ nếu có
+            if (routingLine) {
+                map.removeLayer(routingLine);
+            }
+
+            // Vẽ đường thẳng nối từ vị trí hiện tại đến điểm đích
+            const latlngs = [
+                [userLat, userLng],
+                [destLat, destLng]
+            ];
+
+            routingLine = L.polyline(latlngs, {
+                color: '#d32f2f',
+                weight: 4,
+                dashArray: '8, 8', // Tạo hiệu ứng đường đứt nét chỉ đường
+                opacity: 0.8
+            }).addTo(map);
+
+            // Zoom bản đồ vừa khung đường đi
+            map.fitBounds(routingLine.getBounds(), { padding: [50, 50] });
+
+            const dist = calculateDistance(userLat, userLng, destLat, destLng);
+            alert(`Đã vẽ tuyến đường đến: ${destName}\nKhoảng cách ước tính: ${dist} km`);
+        }
+
+        // Tìm kiếm thời gian thực
+        function handleSearch() {
+            const keyword = document.getElementById('search-input').value.toLowerCase().trim();
+            const filtered = locations.filter(l => l.name.toLowerCase().includes(keyword) || l.note.toLowerCase().includes(keyword));
+            displayLocations(filtered);
+        }
+
         function filterLocations(cat, event) {
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             if(event) event.target.classList.add('active');
+
+            document.getElementById('search-input').value = ''; // Reset ô tìm kiếm khi bấm lọc
 
             if (cat === 'all') {
                 displayLocations(locations);
@@ -449,22 +533,22 @@
         function locateUser() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
+                    userLat = position.coords.latitude;
+                    userLng = position.coords.longitude;
 
                     if (userMarker) map.removeLayer(userMarker);
 
-                    userMarker = L.circleMarker([lat, lng], {
+                    userMarker = L.circleMarker([userLat, userLng], {
                         color: '#0288d1',
                         fillColor: '#29b6f6',
-                        fillOpacity: 0.8,
+                        fillOpacity: 0.9,
                         radius: 10
                     }).addTo(map);
 
-                    userMarker.bindPopup("<b>Vị trí hiện tại của bạn</b>").openPopup();
-                    map.flyTo([lat, lng], 15);
+                    userMarker.bindPopup("<b>📍 Vị trí hiện tại của bạn</b>").openPopup();
+                    map.flyTo([userLat, userLng], 15);
                 }, () => {
-                    alert("Không thể lấy vị trí hiện tại. Vui lòng bật GPS!");
+                    alert("Không thể lấy vị trí hiện tại. Đang dùng mặc định trung tâm Đà Nẵng.");
                 });
             } else {
                 alert("Trình duyệt không hỗ trợ định vị GPS.");
