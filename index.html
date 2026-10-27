@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sổ Tay WebGIS Y Tế & Du Lịch Đà Nẵng v2</title>
+    <title>Sổ Tay WebGIS Y Tế & Du Lịch Đà Nẵng v3</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -21,7 +21,7 @@
             background-color: #f0f2f5;
         }
 
-        /* Header Mới - Màu Xanh Y Tế Cập Nhật */
+        /* Header */
         header {
             background-color: #00695c;
             color: white;
@@ -179,7 +179,7 @@
 <body>
 
     <header>
-        <h1>🏥 WebGIS Sổ Tay Số Đà Nẵng (v2)</h1>
+        <h1>🏥 WebGIS Sổ Tay Số Đà Nẵng (v3)</h1>
         <div class="header-actions">
             <button class="btn-action btn-gps" onclick="locateUser()">📍 Vị trí của tôi</button>
             <a href="tel:115" class="btn-action btn-sos">🚨 CẤP CỨU 115</a>
@@ -204,7 +204,7 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Dữ liệu lấy từ Excel của bạn
+        // Dữ liệu danh sách địa điểm
         const locations = [
             {
                 name: "Bệnh viện C Đà Nẵng",
@@ -248,10 +248,14 @@
             }
         ];
 
+        // Khởi tạo bản đồ tập trung tại Đà Nẵng
         const map = L.map('map').setView([16.0544, 108.2022], 13);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
+        // Sử dụng lớp nền Bản đồ tiêu chuẩn sạch sẽ, hỗ trợ hiển thị tiếng Việt chuẩn hóa
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd'
         }).addTo(map);
 
         let markers = [];
