@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Du Lịch An Toàn Đà Nẵng Số (v7.0)</title>
+    <title>Du Lịch An Toàn Đà Nẵng Số (v7.1)</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -262,15 +262,15 @@
 
         /* MODULE 1: BẢN ĐỒ */
         .map-layout { display: flex; flex: 1; overflow: hidden; }
-        .sidebar { width: 400px; padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; background: #fafafa; border-right: 1px solid #ddd; }
+        .sidebar { width: 420px; padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; background: #fafafa; border-right: 1px solid #ddd; }
         .search-box { width: 100%; padding: 12px; border: 2px solid #00695c; border-radius: 8px; font-size: 16px; }
-        .filter-group { display: flex; gap: 8px; }
-        .filter-btn { flex: 1; padding: 10px; border: 2px solid #00695c; background: white; color: #00695c; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        .filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+        .filter-btn { flex: 1; min-width: 45%; padding: 8px; border: 2px solid #00695c; background: white; color: #00695c; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
         .filter-btn.active, .filter-btn:hover { background: #00695c; color: white; }
         
         .location-card { border: 1px solid #ddd; border-left: 6px solid #00695c; border-radius: 8px; padding: 14px; background: white; cursor: pointer; margin-bottom: 10px; }
         .location-card h5 { font-size: 18px; color: #004d40; margin-bottom: 5px; }
-        .location-card p { font-size: 16px; color: #444; margin-bottom: 4px; }
+        .location-card p { font-size: 15px; color: #444; margin-bottom: 4px; }
         
         #map { flex: 1; height: 100%; }
 
@@ -339,7 +339,7 @@
         </div>
     </div>
 
-    <!-- LỚP 2: MÀN HÌNH KHAI BÁO Y TẾ CÁ NHÂN (HIỆN NGAY SAU KHI ĐĂNG NHẬP) -->
+    <!-- LỚP 2: MÀN HÌNH KHAI BÁO Y TẾ CÁ NHÂN -->
     <div id="health-onboarding">
         <div class="auth-card" style="width: 550px;">
             <h2>📋 SỔ TAY SỨC KHỎE CÁ NHÂN</h2>
@@ -396,8 +396,8 @@
 
             <div class="modules-grid">
                 <div class="module-card mod-1" onclick="openModule('module-map')">
-                    <h4>🗺️ [ MODULE 1 ] BẢN ĐỒ Y TẾ ĐÀ NẴng</h4>
-                    <p>Tra cứu bệnh viện lớn, trung tâm y tế, trạm y tế phường và chỉ đường thông minh.</p>
+                    <h4>🗺️ [ MODULE 1 ] BẢN ĐỒ Y TẾ & NGHỈ DƯỠNG (35 ĐIỂM)</h4>
+                    <p>Tra cứu 35 bệnh viện, trung tâm y tế, resort và khách sạn an toàn thân thiện với người cao tuổi.</p>
                 </div>
                 <div class="module-card mod-2" onclick="openModule('module-hotline')">
                     <h4>📞 [ MODULE 2 ] DANH BẠ HOTLINE KHẨN CẤP</h4>
@@ -414,19 +414,19 @@
             </div>
         </div>
 
-        <!-- MODULE 1: BẢN ĐỒ -->
+        <!-- MODULE 1: BẢN ĐỒ (35 ĐIỂM) -->
         <div id="module-map" class="sub-screen">
             <div class="sub-header">
-                <span>Bản Đồ Y Tế & Tiện Ích Đà Nẵng</span>
+                <span>Bản Đồ 35 Địa Điểm Y Tế & Nghỉ Dưỡng Đà Nẵng</span>
                 <button class="btn-back" onclick="goHome()">⬅ Về Trang Chủ</button>
             </div>
             <div class="map-layout">
                 <div class="sidebar">
-                    <input type="text" id="search-input" class="search-box" placeholder="🔍 Tìm bệnh viện, cơ sở..." oninput="handleSearch()">
+                    <input type="text" id="search-input" class="search-box" placeholder="🔍 Tìm kiếm địa điểm, bệnh viện..." oninput="handleSearch()">
                     <div class="filter-group">
-                        <button class="filter-btn active" onclick="filterLocations('all', event)">Tất cả</button>
+                        <button class="filter-btn active" onclick="filterLocations('all', event)">Tất cả (35)</button>
                         <button class="filter-btn" onclick="filterLocations('Y tế', event)">🏥 Y tế</button>
-                        <button class="filter-btn" onclick="filterLocations('Du lịch', event)">🏨 Du lịch</button>
+                        <button class="filter-btn" onclick="filterLocations('Nghỉ dưỡng', event)">🏨 Nghỉ dưỡng</button>
                     </div>
                     <div id="location-list"></div>
                 </div>
@@ -495,12 +495,43 @@
         let routingLine = null;
         let markers = [];
 
+        // ĐẦY ĐỦ 35 ĐỊA ĐIỂM TRÍCH XUẤT TỪ FILE DỮ LIỆU NCKH.XLSX
         const locations = [
-            { name: "Bệnh viện C Đà Nẵng", category: "Y tế", lat: 16.0681, lng: 108.2145, phone: "0236 3821 118", note: "Cấp cứu 24/7, chuyên khoa Lão khoa" },
-            { name: "Bệnh viện Đa khoa Đà Nẵng", category: "Y tế", lat: 16.0718, lng: 108.2132, phone: "0236 3821 115", note: "Trung tâm cấp cứu hàng đầu Đà Nẵng" },
-            { name: "Bệnh viện Y học Cổ truyền Đà Nẵng", category: "Y tế", lat: 16.0335, lng: 108.2120, phone: "0236 3696 123", note: "Phục hồi chức năng và điều trị người cao tuổi" },
-            { name: "Công viên APEC Đà Nẵng", category: "Du lịch", lat: 16.0602, lng: 108.2232, phone: "Không có", note: "Lối đi bằng phẳng, nhiều ghế nghỉ chân" },
-            { name: "Danh thắng Ngũ Hành Sơn", category: "Du lịch", lat: 16.0042, lng: 108.2633, phone: "0236 3961 114", note: "Có hệ thống thang máy hỗ trợ người cao tuổi" }
+            { name: "TIA WELLNESS RESORT", category: "Nghỉ dưỡng", lat: 16.031443, lng: 108.254268, phone: "0236 396 7999", note: "Chuyên biệt về du lịch nghỉ dưỡng tĩnh dưỡng, thiền, yoga và trị liệu sức khỏe." },
+            { name: "Naman Retreat", category: "Nghỉ dưỡng", lat: 15.969839, lng: 108.284334, phone: "0236 395 9888", note: "Kiến trúc tre xanh mát, tĩnh lặng, thực đơn ăn uống thanh đạm, có xe điện đưa đón nội khu." },
+            { name: "Fushion Resort & Villa Da Nang", category: "Nghỉ dưỡng", lat: 15.972561, lng: 108.282372, phone: "0236 378 8599", note: "Thiết kế biệt thự riêng tư, trọn gói liệu trình chăm sóc spa/ massage hàng ngày" },
+            { name: "Pullman Danang Beach Resort", category: "Nghỉ dưỡng", lat: 16.040864, lng: 108.250044, phone: "0236 395 8888", note: "Khuôn viên xanh mát, lối đi phẳng rộng rãi, bãi biển riêng tiện đi dạo." },
+            { name: "Furama Resort Danang", category: "Nghỉ dưỡng", lat: 16.04008, lng: 108.251969, phone: "0236 384 7333", note: "Phong cách truyền thống Việt Nam, cây xanh rợp bóng, không gian mát" },
+            { name: "Hyatt Regency Danang Resort and Spa", category: "Nghỉ dưỡng", lat: 16.013138, lng: 108.265067, phone: "0236 398 1234", note: "Khuôn viên cực kỳ rộng lớn, bãi biển đẹp, không khí thoáng đãng." },
+            { name: "Sheraton Grand Danang Resort & Convention Center", category: "Nghỉ dưỡng", lat: 15.981224, lng: 108.277927, phone: "0236 398 8999", note: "Resort ven biển cao cấp, dịch vụ chu đáo, hồ bơi rộng." },
+            { name: "Danang Marriott Resort & Spa", category: "Nghỉ dưỡng", lat: 16.007204, lng: 108.266118, phone: "0236 396 8888", note: "Resort ven biển cao cấp, dịch vụ chu đáo, hồ bơi rộng." },
+            { name: "NALOD Đà Nẵng", category: "Nghỉ dưỡng", lat: 16.072224, lng: 108.244731, phone: "0236 391 3999", note: "Sảnh rộng, lối đi không bậc thang thuận tiện, sát biển Phạm Văn Đồng." },
+            { name: "Four Points by Sheraton Danang", category: "Nghỉ dưỡng", lat: 16.078066, lng: 108.245174, phone: "0236 399 7979", note: "Dịch vụ chăm sóc chuẩn quốc tế, liệu trình thư giãn spa cao cấp." },
+            { name: "Sala Danang Beach Hotel", category: "Nghỉ dưỡng", lat: 16.062403, lng: 108.245128, phone: "0236 365 8555", note: "Khách sạn hướng biển, dịch vụ thân thiện, đồ ăn phù hợp cho người trung/cao tuổi." },
+            { name: "Hilton Da Nang", category: "Nghỉ dưỡng", lat: 16.07278, lng: 108.244297, phone: "0236 387 4000", note: "Nằm sát bờ sông Hàn, phòng ốc sang trọng, yên tĩnh, ẩm thực đa dạng." },
+            { name: "Mercure Danang French Village Bana Hills", category: "Nghỉ dưỡng", lat: 15.997583, lng: 107.988615, phone: "0236 379 9888", note: "Nằm trên đỉnh Bà Nà với không khí mát mẻ quanh năm, kiến trúc làng Pháp cổ kính tĩnh lặng về đêm." },
+            { name: "Làng Toom Sara", category: "Nghỉ dưỡng", lat: 15.957546, lng: 107.995369, phone: "0919 225 544", note: "Thiết kế mộc mạc, gần gũi thiên nhiên, không khí núi rừng thoáng đãng." },
+            { name: "LAM Apartment & Hotel", category: "Nghỉ dưỡng", lat: 16.023997, lng: 108.210887, phone: "0236 366 3567", note: "Căn hộ trang bị đầy đủ bếp nấu ăn, máy giặt, không gian ấm cúng như ở nhà." },
+            { name: "Bệnh viện Đà Nẵng", category: "Y tế", lat: 16.07381969, lng: 108.2137274, phone: "0965 231 818", note: "Bệnh viện đa khoa hạng I tuyến cuối, thế mạnh hàng đầu về Phẫu thuật Tim mạch, Thần kinh và Hồi sức cấp cứu." },
+            { name: "Bệnh viện Đa Khoa Nam Liên Chiểu", category: "Y tế", lat: 16.05602315, lng: 108.1622937, phone: "096 515 181", note: "Khám và điều trị Đa khoa cơ bản, Y học cổ truyền, Phục hồi chức năng cho khu vực Liên Chiểu." },
+            { name: "Bệnh viện Ung Bướu Đà Nẵng", category: "Y tế", lat: 16.0689068, lng: 108.1655636, phone: "1900 9095", note: "Chẩn đoán và điều trị ung thư đa mô thức, tầm soát ung thư sớm, chăm sóc giảm nhẹ." },
+            { name: "Bệnh viện Phổi Đà Nẵng", category: "Y tế", lat: 16.04884271, lng: 108.1716412, phone: "0963 488 163", note: "Điều trị các bệnh lý đường hô hấp phức tạp, Lao và bệnh phổi mạn tính (COPD, hen suyễn)." },
+            { name: "Bệnh viện Da liễu Đà Nẵng", category: "Y tế", lat: 16.07428741, lng: 108.1769791, phone: "0965171818", note: "Chuyên về Bệnh lý da liễu, Phẫu thuật da và chăm sóc thẩm mỹ an toàn." },
+            { name: "Bệnh viện Phục hồi chức năng Đà Nẵng", category: "Y tế", lat: 16.00796868, lng: 108.2198803, phone: "0905 6443 88", note: "Chuyên về Vật lý trị liệu và Phục hồi chức năng cho bệnh nhân sau tai biến, chấn thương." },
+            { name: "Bệnh viện Y học cổ truyền Đà Nẵng", category: "Y tế", lat: 16.00592937, lng: 108.2115285, phone: "0905 658 333", note: "Kết hợp Y học cổ truyền và hiện đại, châm cứu, bấm huyệt, điều trị xương khớp mạn tính." },
+            { name: "Bệnh viện Răng-Hàm-Mặt Đà Nẵng", category: "Y tế", lat: 16.05434035, lng: 108.2118934, phone: "0325 333 648", note: "Chuyên sâu về Phẫu thuật Hàm mặt, chỉnh hình răng mặt và nha khoa tổng quát." },
+            { name: "Bệnh viện Mắt Đà Nẵng", category: "Y tế", lat: 16.0374498, lng: 108.2207489, phone: "0965 201 818", note: "Chuyên phẫu thuật đục thủy tinh thể (Phaco), tật khúc xạ và bệnh lý đáy mắt." },
+            { name: "Bệnh viện Quân y 17", category: "Y tế", lat: 16.05430461, lng: 108.2092844, phone: "069 775 170", note: "Thế mạnh về Ngoại chấn thương chỉnh hình, phẫu thuật ngoại khoa và cấp cứu nội ngoại viện." },
+            { name: "Bệnh viện Đa khoa Quốc Tế VinMec Đà Nẵng", category: "Y tế", lat: 16.03897245, lng: 108.2124116, phone: "0236 371 111", note: "Bệnh viện cao cấp chuẩn quốc tế: Tim mạch, ngoại tiêu hóa, chấn thương chỉnh hình." },
+            { name: "Trung tâm Y tế Hải Châu", category: "Y tế", lat: 16.07720319, lng: 108.2156527, phone: "0905 061 818", note: "Khám Đa khoa nội ngoại trú, quản lý bệnh mạn tính BHYT tuyến quận Hải Châu." },
+            { name: "Trung tâm Y tế Thanh Khê", category: "Y tế", lat: 16.06862069, lng: 108.1903298, phone: "0905 081 818", note: "Khám Đa khoa nội ngoại trú, cấp cứu ban đầu tuyến quận Thanh Khê." },
+            { name: "Trung tâm Y tế Liên Chiểu", category: "Y tế", lat: 16.06444099, lng: 108.1564928, phone: "0965 121 818", note: "Khám Đa khoa, cấp cứu 24/7, điều trị nội trú khu vực Liên Chiểu." },
+            { name: "Trung tâm Y tế Sơn Trà", category: "Y tế", lat: 16.05860159, lng: 108.2357195, phone: "0236 946 927", note: "Khám Đa khoa, điều trị nội trú, cấp cứu 24/7 khu vực Sơn Trà." },
+            { name: "Trung tâm Y tế Ngũ Hành Sơn", category: "Y tế", lat: 16.00858666, lng: 108.2585975, phone: "0236 396 9894", note: "Khám Đa khoa, Y học cổ truyền, chăm sóc sức khỏe khu vực Ngũ Hành Sơn." },
+            { name: "Trung tâm Y tế Cẩm Lệ", category: "Y tế", lat: 16.0105569, lng: 108.1959836, phone: "0236 367 2210", note: "Khám chữa bệnh Đa khoa, cấp cứu ban đầu khu vực Cẩm Lệ." },
+            { name: "Trung tâm Y tế Hòa Vang", category: "Y tế", lat: 16.00911558, lng: 108.1528462, phone: "0233 637 89123", note: "Khám chữa bệnh Đa khoa, cấp cứu 24/7, điều trị nội trú cho huyện Hòa Vang." },
+            { name: "Trung tâm Cấp cứu thành phố Đà Nẵng", category: "Y tế", lat: 16.0618465, lng: 108.1739439, phone: "0236 888 690", note: "Chuyên trách Cấp cứu ngoại viện, vận chuyển khẩn cấp (115) toàn thành phố." },
+            { name: "Bệnh viện Hoàn Mỹ", category: "Y tế", lat: 16.05981282, lng: 108.2104065, phone: "0236 365 0676", note: "Bệnh viện đa khoa tư nhân hàng đầu: Tim mạch, ngoại tiêu hóa, chấn thương chỉnh hình." }
         ];
 
         function toggleAuthMode(mode) {
@@ -526,7 +557,6 @@
             }
         }
 
-        // Bước 1: Đăng nhập thành công -> Hiện màn hình Khai báo Y tế (Lớp 2)
         function handleLogin() {
             const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value.trim();
@@ -534,15 +564,14 @@
             const savedP = localStorage.getItem('sys_pass');
 
             if ((u === "admin" && p === "123456") || (u === savedU && p === savedP)) {
-                document.getElementById('auth-guard').style.display = 'none'; // Tắt màn hình đăng nhập
-                document.getElementById('health-onboarding').style.display = 'flex'; // Bật màn hình khai báo y tế
+                document.getElementById('auth-guard').style.display = 'none';
+                document.getElementById('health-onboarding').style.display = 'flex';
                 document.getElementById('welcome-text').innerText = `Xin chào, ${u}!`;
             } else {
                 alert("Sai tên đăng nhập hoặc mật khẩu! (Gợi ý: admin / 123456)");
             }
         }
 
-        // Bước 2: Lưu khai báo y tế -> Mở khóa Trang chủ và chuyển thẳng tới Bản đồ
         function submitHealthOnboarding() {
             const name = document.getElementById('onboard-name').value;
             const age = document.getElementById('onboard-age').value;
@@ -550,7 +579,6 @@
             const ill = document.getElementById('onboard-ill').value;
             const phone = document.getElementById('onboard-phone').value;
 
-            // Lưu vào localStorage để xem lại ở Module 3
             localStorage.setItem('h_name', name);
             localStorage.setItem('h_age', age);
             localStorage.setItem('h_blood', blood);
@@ -559,7 +587,6 @@
 
             updateHealthCardDisplay();
 
-            // Tắt màn hình khai báo, đưa người dùng vào hệ thống và mở ngay bản đồ
             document.getElementById('health-onboarding').style.display = 'none';
             openModule('module-map');
         }
@@ -599,7 +626,7 @@
 
         function initMap() {
             if (map) { map.invalidateSize(); return; }
-            map = L.map('map').setView([16.0544, 108.2022], 13);
+            map = L.map('map').setView([16.0544, 108.2022], 12);
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
                 maxZoom: 18, attribution: 'Tiles &copy; Esri'
             }).addTo(map);
@@ -616,15 +643,20 @@
             const listContainer = document.getElementById('location-list');
             listContainer.innerHTML = '';
 
+            if (data.length === 0) {
+                listContainer.innerHTML = '<p style="text-align:center; color:#777; padding:10px;">Không tìm thấy địa điểm phù hợp.</p>';
+                return;
+            }
+
             data.forEach((loc) => {
                 const marker = L.marker([loc.lat, loc.lng]).addTo(map);
                 marker.bindPopup(`
-                    <div style="font-size: 15px;">
+                    <div style="font-size: 14px; max-width: 220px;">
                         <b style="color: #00695c;">${loc.name}</b><br>
                         <b>Loại:</b> ${loc.category}<br>
                         <b>SĐT:</b> <a href="tel:${loc.phone}">${loc.phone}</a><br>
                         <b>Ghi chú:</b> ${loc.note}<br><br>
-                        <button onclick="drawRoute(${loc.lat}, ${loc.lng}, '${loc.name}')" style="background:#00695c; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">📍 Chỉ đường tới đây</button>
+                        <button onclick="drawRoute(${loc.lat}, ${loc.lng}, '${loc.name}')" style="background:#00695c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">📍 Chỉ đường tới đây</button>
                     </div>
                 `);
                 markers.push(marker);
@@ -633,6 +665,7 @@
                 card.className = 'location-card';
                 card.innerHTML = `
                     <h5>${loc.name}</h5>
+                    <p><b>Loại hình:</b> <span style="color:${loc.category==='Y tế'?'#c62828':'#2e7d32'}; font-weight:bold;">${loc.category}</span></p>
                     <p><b>SĐT:</b> ${loc.phone}</p>
                     <p><b>Tiện ích:</b> ${loc.note}</p>
                     <button style="background:#00695c; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; margin-top:5px;" onclick="event.stopPropagation(); drawRoute(${loc.lat}, ${loc.lng}, '${loc.name}')">🗺️ Vẽ đường đi</button>
