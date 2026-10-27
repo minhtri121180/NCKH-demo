@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sổ Tay WebGIS Y Tế & Du Lịch Đà Nẵng v4.1</title>
+    <title>Sổ Tay WebGIS Y Tế & Du Lịch Đà Nẵng v4.2</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -96,6 +96,7 @@
             display: flex;
             flex: 1;
             overflow: hidden;
+            position: relative;
         }
 
         /* Sidebar */
@@ -183,6 +184,7 @@
         #map {
             flex: 1;
             height: 100%;
+            width: 100%;
         }
 
         /* Modal Đăng nhập */
@@ -249,7 +251,7 @@
 <body>
 
     <header>
-        <h1>🏥 WebGIS Sổ Tay Số Đà Nẵng (v4.1)</h1>
+        <h1>🏥 WebGIS Sổ Tay Số Đà Nẵng (v4.2)</h1>
         <div class="header-actions">
             <button class="btn-action btn-gps" onclick="locateUser()">📍 Vị trí của tôi</button>
             <a href="tel:115" class="btn-action btn-sos">🚨 CẤP CỨU 115</a>
@@ -336,10 +338,9 @@
 
         const map = L.map('map').setView([16.0544, 108.2022], 13);
 
-        // Đổi sang lớp nền Esri World Topo Map (Miễn phí vĩnh viễn, không cần API key, sạch sẽ)
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
             maxZoom: 18,
-            attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), swisstopo, MapmyIndia, &#169; OpenStreetMap contributors, and the GIS User Community'
+            attribution: 'Tiles &copy; Esri'
         }).addTo(map);
 
         let markers = [];
@@ -419,7 +420,6 @@
             }
         }
 
-        /* Xử lý Đăng nhập / Đăng xuất */
         function handleAuth() {
             if (isLoggedIn) {
                 isLoggedIn = false;
@@ -427,3 +427,35 @@
                 document.getElementById('btn-auth').innerText = '🔑 Đăng nhập';
                 alert("Đã đăng xuất thành công!");
             } else {
+                document.getElementById('login-modal').style.display = 'flex';
+            }
+        }
+
+        function closeLoginModal() {
+            document.getElementById('login-modal').style.display = 'none';
+        }
+
+        function submitLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            if (user === "admin" && pass === "123456") {
+                isLoggedIn = true;
+                document.getElementById('user-info').style.display = 'inline-block';
+                document.getElementById('btn-auth').innerText = '🚪 Đăng xuất';
+                closeLoginModal();
+                alert("Đăng nhập quyền Quản trị viên thành công!");
+            } else {
+                alert("Tài khoản hoặc mật khẩu không đúng! (Gợi ý: admin / 123456)");
+            }
+        }
+
+        displayLocations(locations);
+        
+        // Buộc bản đồ tự điều chỉnh lại kích thước hiển thị đầy đủ
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 200);
+    </script>
+</body>
+</html>
